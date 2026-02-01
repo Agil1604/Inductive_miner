@@ -1,0 +1,15 @@
+[package]
+name = "robust_process_mining_with_guarantees"
+version = "0.1.0"
+edition = "2024"
+authors = ["Amirov Agil <agil.amirov@gmail.com>"]
+description = "This is the implementation of Robust process mining algorithm with guarantees"
+readme = true
+repository = "https://github.com/Agil1604/Inductive_miner"
+# license = 
+# keywords = ["process mining"]
+
+# exclude = []
+# include = []
+
+[dependencies]
