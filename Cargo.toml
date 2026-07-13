@@ -13,3 +13,5 @@ repository = "https://github.com/Agil1604/Inductive_miner"
 # include = []
 
 [dependencies]
+thiserror = "2.0.21"
+
