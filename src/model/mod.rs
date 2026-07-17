@@ -1,7 +1,8 @@
 pub mod event;
 pub mod process_tree;
 
-pub use event::EventLog;
-pub use process_tree::{ProcessTree, Cut, Node};
-
-pub type Activity = String;
+///
+/// Represents an activity in a process model
+/// 
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct Activity(pub String);
