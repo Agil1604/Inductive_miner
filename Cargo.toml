@@ -14,5 +14,6 @@ repository = "https://github.com/Agil1604/Inductive_miner"
 
 [dependencies]
 thiserror = "2.0.21"
+quick-xml = "0.42.0"
 chrono = { version = "0.4", features = ["serde"] }
 
