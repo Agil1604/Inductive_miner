@@ -1,4 +1,5 @@
 pub mod event;
+pub mod directly_follows_graph;
 pub mod process_tree;
 
 ///
