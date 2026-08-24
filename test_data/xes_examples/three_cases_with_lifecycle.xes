@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<log xes.version="1.0" xes.features="">
+    <extension name="Concept" prefix="concept" uri="http://www.xes-standard.org/concept.xesext" />
+    <extension name="Time" prefix="time" uri="http://www.xes-standard.org/time.xesext" />
+    <extension name="Lifecycle" prefix="lifecycle"
+        uri="http://www.xes-standard.org/lifecycle.xesext" />
+    <trace>
+        <string key="concept:name" value="case-1" />
+        <event>
+            <string key="concept:name" value="A" />
+            <date key="time:timestamp" value="2026-10-02T09:00:00Z" />
+            <string key="lifecycle:transition" value="start" />
+        </event>
+        <event>
+            <string key="concept:name" value="A" />
+            <date key="time:timestamp" value="2026-10-02T09:01:00Z" />
+            <string key="lifecycle:transition" value="complete" />
+        </event>
+    </trace>
+    <trace>
+        <string key="concept:name" value="case-2" />
+        <event>
+            <string key="concept:name" value="B" />
+            <date key="time:timestamp" value="2026-10-02T10:00:00Z" />
+            <string key="lifecycle:transition" value="start" />
+        </event>
+        <event>
+            <string key="concept:name" value="B" />
+            <date key="time:timestamp" value="2026-10-02T10:02:00Z" />
+            <string key="lifecycle:transition" value="complete" />
+        </event>
+    </trace>
+    <trace>
+        <string key="concept:name" value="case-3" />
+        <event>
+            <string key="concept:name" value="C" />
+            <date key="time:timestamp" value="2026-10-02T11:00:00Z" />
+            <string key="lifecycle:transition" value="start" />
+        </event>
+        <event>
+            <string key="concept:name" value="C" />
+            <date key="time:timestamp" value="2026-10-02T11:03:00Z" />
+            <string key="lifecycle:transition" value="complete" />
+        </event>
+    </trace>
+</log>

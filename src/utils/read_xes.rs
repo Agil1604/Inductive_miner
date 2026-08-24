@@ -1,4 +1,4 @@
-use crate::model::event::{Event, EventLog, EventClassifier, Lifecycle, Trace};
+use crate::model::event::{Event, EventClassifier, EventLog, Lifecycle, Trace};
 use quick_xml::Reader;
 use quick_xml::events::Event as XmlEvent;
 use std::{fs::File, io::BufReader, path::Path};
@@ -256,12 +256,108 @@ mod tests {
         assert!(log.traces[0].events.is_empty());
     }
 
+    fn read_fixture(name: &str) -> EventLog {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("test_data/xes_examples")
+            .join(name);
+        read_xes(&path, &EventClassifier::default()).unwrap()
+    }
+
+    fn activity_names(trace: &Trace) -> Vec<&str> {
+        trace.events.iter().map(|e| e.activity.0.as_str()).collect()
+    }
+
     #[test]
-    fn reads_xes_from_file() {
-        let path = Path::new("tests/test.xes");
-        let classifier = EventClassifier::default();
-        let log = read_xes(path, &classifier).unwrap();
+    fn reads_five_traces_with_repetitions() {
+        let log = read_fixture("five_traces_with_repetitions.xes");
+        let expected = [
+            vec!["A", "B", "C"],
+            vec!["A", "C", "B"],
+            vec!["A", "B", "B", "C"],
+            vec!["A", "B", "C", "B", "C"],
+            vec!["A", "B", "C"],
+        ];
+        assert_eq!(log.traces.len(), expected.len());
+        for (trace, expected) in log.traces.iter().zip(expected) {
+            assert_eq!(activity_names(trace), expected);
+            assert!(trace.case_id.is_empty());
+            assert!(
+                trace
+                    .events
+                    .iter()
+                    .all(|e| e.lifecycle == Lifecycle::Unknown && e.timestamp.is_none())
+            );
+        }
+    }
+
+    #[test]
+    fn reads_nested_attributes_without_treating_metadata_as_events() {
+        let log = read_fixture("nested_attributes.xes");
+        assert_eq!(log.traces.len(), 2);
+        assert_eq!(log.traces[0].case_id, "case-1");
+        assert_eq!(log.traces[1].case_id, "case-2");
+        assert_eq!(activity_names(&log.traces[0]), ["A", "B"]);
+        assert_eq!(activity_names(&log.traces[1]), ["C"]);
+        assert!(
+            log.traces
+                .iter()
+                .flat_map(|t| &t.events)
+                .all(|e| e.timestamp.is_none() && e.lifecycle == Lifecycle::Unknown)
+        );
+    }
+
+    #[test]
+    fn reads_three_cases_with_lifecycle() {
+        let log = read_fixture("three_cases_with_lifecycle.xes");
+        assert_eq!(log.traces.len(), 3);
+        for (i, (activity, start, end)) in [
+            ("A", "2026-10-02T09:00:00Z", "2026-10-02T09:01:00Z"),
+            ("B", "2026-10-02T10:00:00Z", "2026-10-02T10:02:00Z"),
+            ("C", "2026-10-02T11:00:00Z", "2026-10-02T11:03:00Z"),
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            let trace = &log.traces[i];
+            assert_eq!(trace.case_id, format!("case-{}", i + 1));
+            assert_eq!(activity_names(trace), [activity, activity]);
+            assert_eq!(trace.events[0].lifecycle, Lifecycle::Start);
+            assert_eq!(trace.events[1].lifecycle, Lifecycle::Complete);
+            for (event, timestamp) in trace.events.iter().zip([start, end]) {
+                assert_eq!(
+                    event.timestamp,
+                    Some(
+                        chrono::DateTime::parse_from_rfc3339(timestamp)
+                            .unwrap()
+                            .with_timezone(&chrono::Utc)
+                    )
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn reads_pdc2025_1000_traces() {
+        let log = read_fixture("pdc2025_1000_traces.xes");
         assert_eq!(log.traces.len(), 1000);
         assert_eq!(log.traces[0].events.len(), 6);
+        assert_eq!(
+            activity_names(&log.traces[0]),
+            ["t252", "t396", "t580", "t936", "t482", "t969"]
+        );
+        assert_eq!(
+            log.traces.iter().map(|t| t.events.len()).sum::<usize>(),
+            16326
+        );
+        assert_eq!(log.traces[0].case_id, "trace 1");
+        assert_eq!(log.traces[999].case_id, "trace 1000");
+        assert!(
+            log.traces
+                .iter()
+                .flat_map(|t| &t.events)
+                .all(|e| !e.activity.0.is_empty()
+                    && e.lifecycle == Lifecycle::Unknown
+                    && e.timestamp.is_none())
+        );
     }
 }

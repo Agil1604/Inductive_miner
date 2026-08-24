@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<log xes.version="1.0" xes.features="">
+    <extension name="Concept" prefix="concept" uri="http://www.xes-standard.org/concept.xesext" />
+    <trace>
+        <event>
+            <string key="concept:name" value="A" />
+        </event>
+        <event>
+            <string key="concept:name" value="B" />
+        </event>
+        <event>
+            <string key="concept:name" value="C" />
+        </event>
+    </trace>
+    <trace>
+        <event>
+            <string key="concept:name" value="A" />
+        </event>
+        <event>
+            <string key="concept:name" value="C" />
+        </event>
+        <event>
+            <string key="concept:name" value="B" />
+        </event>
+    </trace>
+    <trace>
+        <event>
+            <string key="concept:name" value="A" />
+        </event>
+        <event>
+            <string key="concept:name" value="B" />
+        </event>
+        <event>
+            <string key="concept:name" value="B" />
+        </event>
+        <event>
+            <string key="concept:name" value="C" />
+        </event>
+    </trace>
+    <trace>
+        <event>
+            <string key="concept:name" value="A" />
+        </event>
+        <event>
+            <string key="concept:name" value="B" />
+        </event>
+        <event>
+            <string key="concept:name" value="C" />
+        </event>
+        <event>
+            <string key="concept:name" value="B" />
+        </event>
+        <event>
+            <string key="concept:name" value="C" />
+        </event>
+    </trace>
+    <trace>
+        <event>
+            <string key="concept:name" value="A" />
+        </event>
+        <event>
+            <string key="concept:name" value="B" />
+        </event>
+        <event>
+            <string key="concept:name" value="C" />
+        </event>
+    </trace>
+</log>

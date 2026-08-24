@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<log xes.version="1.0" xes.features="nested-attributes">
+    <extension name="Concept" prefix="concept" uri="http://www.xes-standard.org/concept.xesext" />
+    <container key="Attribute1">
+        <container key="Attribute1-1">
+            <string key="Attribute1-1-2" value="lol" />
+            <date key="Attribute1-1-3" value="2023-01-01T00:00:00Z" />
+            <int key="Attribute1-1-4" value="123" />
+            <float key="Attribute1-1-5" value="3.14" />
+            <boolean key="Attribute1-1-6" value="true" />
+            <id key="Attribute1-1-7" value="00000000-0000-4000-8000-000000000123" />
+        </container>
+        <string key="Attribute1-2" value="lol" />
+        <date key="Attribute1-3" value="2023-01-01T00:00:00Z" />
+        <int key="Attribute1-4" value="123" />
+        <float key="Attribute1-5" value="3.14" />
+        <boolean key="Attribute1-6" value="true" />
+        <id key="Attribute1-7" value="00000000-0000-4000-8000-000000000123" />
+    </container>
+    <string key="Attribute2" value="lol" />
+    <date key="Attribute3" value="2023-01-01T00:00:00Z" />
+    <int key="Attribute4" value="123" />
+    <float key="Attribute5" value="3.14" />
+    <boolean key="Attribute6" value="true" />
+    <id key="Attribute7" value="00000000-0000-4000-8000-000000000123" />
+    <trace>
+        <string key="concept:name" value="case-1" />
+        <container key="Attribute1">
+            <container key="Attribute1-1">
+                <string key="Attribute1-1-2" value="lol" />
+                <date key="Attribute1-1-3" value="2023-01-01T00:00:00Z" />
+                <int key="Attribute1-1-4" value="123" />
+                <float key="Attribute1-1-5" value="3.14" />
+                <boolean key="Attribute1-1-6" value="true" />
+                <id key="Attribute1-1-7" value="00000000-0000-4000-8000-000000000123" />
+            </container>
+            <string key="Attribute1-2" value="lol" />
+            <date key="Attribute1-3" value="2023-01-01T00:00:00Z" />
+            <int key="Attribute1-4" value="123" />
+            <float key="Attribute1-5" value="3.14" />
+            <boolean key="Attribute1-6" value="true" />
+            <id key="Attribute1-7" value="00000000-0000-4000-8000-000000000123" />
+        </container>
+        <string key="Attribute2" value="lol" />
+        <date key="Attribute3" value="2023-01-01T00:00:00Z" />
+        <int key="Attribute4" value="123" />
+        <float key="Attribute5" value="3.14" />
+        <boolean key="Attribute6" value="true" />
+        <id key="Attribute7" value="00000000-0000-4000-8000-000000000123" />
+        <event>
+            <string key="concept:name" value="A" />
+            <container key="Attribute1">
+                <container key="Attribute1-1">
+                    <string key="Attribute1-1-2" value="lol" />
+                    <date key="Attribute1-1-3" value="2023-01-01T00:00:00Z" />
+                    <int key="Attribute1-1-4" value="123" />
+                    <float key="Attribute1-1-5" value="3.14" />
+                    <boolean key="Attribute1-1-6" value="true" />
+                    <id key="Attribute1-1-7" value="00000000-0000-4000-8000-000000000123" />
+                </container>
+                <string key="Attribute1-2" value="lol" />
+                <date key="Attribute1-3" value="2023-01-01T00:00:00Z" />
+                <int key="Attribute1-4" value="123" />
+                <float key="Attribute1-5" value="3.14" />
+                <boolean key="Attribute1-6" value="true" />
+                <id key="Attribute1-7" value="00000000-0000-4000-8000-000000000123" />
+            </container>
+            <string key="Attribute2" value="lol" />
+            <date key="Attribute3" value="2023-01-01T00:00:00Z" />
+            <int key="Attribute4" value="123" />
+            <float key="Attribute5" value="3.14" />
+            <boolean key="Attribute6" value="true" />
+            <id key="Attribute7" value="00000000-0000-4000-8000-000000000123" />
+        </event>
+        <event>
+            <string key="concept:name" value="B" />
+            <container key="Attribute1">
+                <container key="Attribute1-1">
+                    <string key="Attribute1-1-2" value="lol" />
+                    <date key="Attribute1-1-3" value="2023-01-01T00:00:00Z" />
+                    <int key="Attribute1-1-4" value="123" />
+                    <float key="Attribute1-1-5" value="3.14" />
+                    <boolean key="Attribute1-1-6" value="true" />
+                    <id key="Attribute1-1-7" value="00000000-0000-4000-8000-000000000123" />
+                </container>
+                <string key="Attribute1-2" value="lol" />
+                <date key="Attribute1-3" value="2023-01-01T00:00:00Z" />
+                <int key="Attribute1-4" value="123" />
+                <float key="Attribute1-5" value="3.14" />
+                <boolean key="Attribute1-6" value="true" />
+                <id key="Attribute1-7" value="00000000-0000-4000-8000-000000000123" />
+            </container>
+            <string key="Attribute2" value="lol" />
+            <date key="Attribute3" value="2023-01-01T00:00:00Z" />
+            <int key="Attribute4" value="123" />
+            <float key="Attribute5" value="3.14" />
+            <boolean key="Attribute6" value="true" />
+            <id key="Attribute7" value="00000000-0000-4000-8000-000000000123" />
+        </event>
+    </trace>
+    <trace>
+        <string key="concept:name" value="case-2" />
+        <event>
+            <string key="concept:name" value="C" />
+            <container key="Attribute1">
+                <container key="Attribute1-1">
+                    <string key="Attribute1-1-2" value="lol" />
+                    <date key="Attribute1-1-3" value="2023-01-01T00:00:00Z" />
+                    <int key="Attribute1-1-4" value="123" />
+                    <float key="Attribute1-1-5" value="3.14" />
+                    <boolean key="Attribute1-1-6" value="true" />
+                    <id key="Attribute1-1-7" value="00000000-0000-4000-8000-000000000123" />
+                </container>
+                <string key="Attribute1-2" value="lol" />
+                <date key="Attribute1-3" value="2023-01-01T00:00:00Z" />
+                <int key="Attribute1-4" value="123" />
+                <float key="Attribute1-5" value="3.14" />
+                <boolean key="Attribute1-6" value="true" />
+                <id key="Attribute1-7" value="00000000-0000-4000-8000-000000000123" />
+            </container>
+            <string key="Attribute2" value="lol" />
+            <date key="Attribute3" value="2023-01-01T00:00:00Z" />
+            <int key="Attribute4" value="123" />
+            <float key="Attribute5" value="3.14" />
+            <boolean key="Attribute6" value="true" />
+            <id key="Attribute7" value="00000000-0000-4000-8000-000000000123" />
+        </event>
+    </trace>
+</log>
