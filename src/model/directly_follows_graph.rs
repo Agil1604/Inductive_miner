@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use super::{Activity, event::EventLog};
 
 ///
-/// A frequency-weighted directly-follows abstraction of an event log. 
-/// An edge `(a, b)` records how often `b` immediately follows `a` within a trace. 
+/// A frequency-weighted directly-follows abstraction of an event log.
+/// An edge `(a, b)` records how often `b` immediately follows `a` within a trace.
 ///
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct DirectlyFollowsGraph {
@@ -61,17 +61,13 @@ mod tests {
     use super::*;
     use crate::{Event, Lifecycle, Trace};
 
-    fn activity(name: &str) -> Activity {
-        Activity(name.into())
-    }
-
     fn trace(names: &[&str]) -> Trace {
         Trace {
             case_id: String::new(),
             events: names
                 .iter()
                 .map(|name| Event {
-                    activity: activity(name),
+                    activity: Activity::from(*name),
                     lifecycle: Lifecycle::Unknown,
                     timestamp: None,
                 })
@@ -94,22 +90,26 @@ mod tests {
         println!("{:?}", graph);
         assert_eq!(
             graph.activities,
-            HashMap::from([(activity("a"), 4), (activity("b"), 2), (activity("c"), 1),])
+            HashMap::from([
+                (Activity::from("a"), 4),
+                (Activity::from("b"), 2),
+                (Activity::from("c"), 1),
+            ])
         );
         assert_eq!(
             graph.edges,
             HashMap::from([
-                ((activity("a"), activity("a")), 2),
-                ((activity("a"), activity("b")), 2),
+                ((Activity::from("a"), Activity::from("a")), 2),
+                ((Activity::from("a"), Activity::from("b")), 2),
             ])
         );
         assert_eq!(
             graph.start_activities,
-            HashMap::from([(activity("a"), 2), (activity("c"), 1)])
+            HashMap::from([(Activity::from("a"), 2), (Activity::from("c"), 1)])
         );
         assert_eq!(
             graph.end_activities,
-            HashMap::from([(activity("b"), 2), (activity("c"), 1)])
+            HashMap::from([(Activity::from("b"), 2), (Activity::from("c"), 1)])
         );
         assert_eq!(graph.empty_trace_count, 2);
     }
