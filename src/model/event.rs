@@ -77,6 +77,16 @@ impl Default for EventClassifier {
 }
 impl EventLog {
     ///
+    /// Returns distinct activities in lexical order of their names.
+    /// Event order, multiplicities, and metadata do not affect the result.
+    ///
+    pub fn alphabet(&self) -> Vec<Activity> {
+        let mut activities: Vec<_> = self.activities().into_iter().collect();
+        activities.sort();
+        activities
+    }
+
+    ///
     /// Activity alphabet, independent of case identifiers and timestamps.
     ///
     pub fn activities(&self) -> HashSet<Activity> {
