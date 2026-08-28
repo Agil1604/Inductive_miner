@@ -1,5 +1,5 @@
 use crate::framework::BaseCase;
-use crate::{EventLog, Node};
+use crate::{IndexedEventLog, Node};
 
 ///
 /// Returns an activity leaf when every trace contains exactly one event of
@@ -9,12 +9,12 @@ use crate::{EventLog, Node};
 pub struct SingleActivity;
 
 impl BaseCase for SingleActivity {
-    fn base_case(&self, log: &EventLog) -> Option<Node> {
+    fn base_case(&self, log: &IndexedEventLog) -> Option<Node> {
         let activity = &log.traces.first()?.events.first()?.activity;
         log.traces
             .iter()
             .all(|trace| trace.events.len() == 1 && trace.events[0].activity == *activity)
-            .then(|| Node::new_leaf(Some(activity.clone())))
+            .then(|| Node::new_leaf(Some(log.resolve(*activity).clone())))
     }
 }
 
@@ -22,7 +22,7 @@ impl BaseCase for SingleActivity {
 mod tests {
     use super::*;
     use crate::Activity;
-    use crate::test_support::log;
+    use crate::test_support::indexed_log as log;
 
     #[test]
     fn matches_single_and_duplicate_single_event_traces() {
@@ -37,7 +37,7 @@ mod tests {
     #[test]
     fn rejects_empty_logs_and_empty_traces() {
         for input in [
-            EventLog::default(),
+            log(&[]),
             log(&[&[]]),
             log(&[&[], &["A"]]),
             log(&[&["A"], &[]]),

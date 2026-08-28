@@ -195,9 +195,9 @@ impl ProcessTree {
 /// Cut of a process tree
 ///
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Cut {
+pub struct Cut<A: Eq + std::hash::Hash = Activity> {
     pub operator: OperatorType,
-    pub partitions: Vec<HashSet<Activity>>,
+    pub partitions: Vec<HashSet<A>>,
 }
 
 #[derive(thiserror::Error, Debug, Clone, PartialEq, Eq)]
@@ -210,11 +210,11 @@ pub enum CutError {
     AlphabetMismatch,
 }
 
-impl Cut {
+impl<A: Clone + Eq + std::hash::Hash> Cut<A> {
     ///
     /// Validate the cut against the given activity alphabet
-    /// 
-    pub fn validate(&self, alphabet: &HashSet<Activity>) -> Result<(), CutError> {
+    ///
+    pub fn validate(&self, alphabet: &HashSet<A>) -> Result<(), CutError> {
         if self.partitions.len() < 2 || self.partitions.iter().any(HashSet::is_empty) {
             return Err(CutError::EmptyPartition);
         }
@@ -232,7 +232,6 @@ impl Cut {
         Ok(())
     }
 }
-
 
 #[cfg(test)]
 mod validation_tests {

@@ -21,3 +21,6 @@ pub use utils::read_xes::{read_xes, read_xes_from_reader};
 #[cfg(test)]
 #[path = "../tests/support/log.rs"]
 pub(crate) mod test_support;
+pub use model::indexed_log::{ActivityId, ActivityInterner, IndexedEventLog};
+pub type IndexedCut = Cut<ActivityId>;
+pub type IndexedDfg = DirectlyFollowsGraph<ActivityId>;

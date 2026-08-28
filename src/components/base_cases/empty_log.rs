@@ -1,5 +1,5 @@
 use crate::framework::BaseCase;
-use crate::{EventLog, Node};
+use crate::{IndexedEventLog, Node};
 
 ///
 /// Returns a silent leaf when the log contains no traces.
@@ -8,7 +8,7 @@ use crate::{EventLog, Node};
 pub struct EmptyLog;
 
 impl BaseCase for EmptyLog {
-    fn base_case(&self, log: &EventLog) -> Option<Node> {
+    fn base_case(&self, log: &IndexedEventLog) -> Option<Node> {
         log.traces.is_empty().then(|| Node::new_leaf(None))
     }
 }
@@ -16,12 +16,12 @@ impl BaseCase for EmptyLog {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Activity, Event, Lifecycle, Trace};
+    use crate::{Activity, Event, EventLog, Lifecycle, Trace};
 
     #[test]
     fn returns_tau_for_a_log_without_traces() {
         assert_eq!(
-            EmptyLog.base_case(&EventLog::default()),
+            EmptyLog.base_case(&EventLog::default().indexed()),
             Some(Node::new_leaf(None))
         );
     }
@@ -31,7 +31,7 @@ mod tests {
         let log = EventLog {
             traces: vec![Trace::default()],
         };
-        assert_eq!(EmptyLog.base_case(&log), None);
+        assert_eq!(EmptyLog.base_case(&log.indexed()), None);
     }
 
     #[test]
@@ -46,6 +46,6 @@ mod tests {
                 }],
             }],
         };
-        assert_eq!(EmptyLog.base_case(&log), None);
+        assert_eq!(EmptyLog.base_case(&log.indexed()), None);
     }
 }

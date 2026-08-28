@@ -22,3 +22,10 @@ pub fn log(traces: &[&[&str]]) -> EventLog {
             .collect(),
     }
 }
+
+///
+/// Builds an indexed synthetic log for tests.
+///
+pub fn indexed_log(traces: &[&[&str]]) -> super::IndexedEventLog {
+    log(traces).indexed()
+}

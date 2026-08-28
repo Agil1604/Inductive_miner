@@ -1,5 +1,5 @@
 use super::{BaseCase, DetectCut, FallThrough, SplitLog};
-use crate::{EventLog, Node, ProcessTree};
+use crate::{EventLog, IndexedEventLog, Node, ProcessTree};
 
 #[derive(thiserror::Error, Debug)]
 pub enum MinerError {
@@ -11,18 +11,20 @@ pub enum MinerError {
     InvalidSplitCount,
     #[error("sublog contains activities outside its corresponding cut part")]
     InvalidSplitAlphabet,
+    #[error("splitter returned a sublog with a different activity interner")]
+    DifferentInterner,
 }
 
 ///
 /// A trait for miners to implement the recursive mining algorithm.
-/// 
+///
 pub trait Miner {
     fn mine(&self, log: &EventLog) -> Result<ProcessTree, MinerError>;
 }
 
 ///
 /// An inductive miner.
-/// 
+///
 pub struct InductiveMiner<B, C, S, F> {
     base_case: B,
     cut_finder: C,
@@ -52,7 +54,7 @@ where
     ///
     /// Recursively mines a node from the given event log.
     ///
-    pub fn mine_node(&self, log: &EventLog) -> Result<Node, MinerError> {
+    pub fn mine_node(&self, log: &IndexedEventLog) -> Result<Node, MinerError> {
         if let Some(tree) = self.base_case.base_case(log) {
             tree.validate()?;
             return Ok(tree);
@@ -66,6 +68,9 @@ where
             }
 
             for (sublog, part) in sublogs.iter().zip(&cut.partitions) {
+                if !log.shares_interner(sublog) {
+                    return Err(MinerError::DifferentInterner);
+                }
                 if !sublog.activities().is_subset(part) {
                     return Err(MinerError::InvalidSplitAlphabet);
                 }
@@ -82,28 +87,27 @@ where
         node.validate()?;
         Ok(node)
     }
-
 }
 
 impl<B: BaseCase, C: DetectCut, S: SplitLog, F: FallThrough> Miner for InductiveMiner<B, C, S, F> {
     fn mine(&self, log: &EventLog) -> Result<ProcessTree, MinerError> {
-        Ok(ProcessTree::new(self.mine_node(log)?)?)
+        Ok(ProcessTree::new(self.mine_node(&log.indexed())?)?)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Activity, Cut, OperatorType};
+    use crate::{Activity, IndexedCut, OperatorType};
     struct Plugins;
     impl BaseCase for Plugins {
-        fn base_case(&self, _: &EventLog) -> Option<Node> {
+        fn base_case(&self, _: &IndexedEventLog) -> Option<Node> {
             None
         }
     }
     impl DetectCut for Plugins {
-        fn detect_cut(&self, log: &EventLog) -> Option<Cut> {
-            Some(Cut {
+        fn detect_cut(&self, log: &IndexedEventLog) -> Option<IndexedCut> {
+            Some(IndexedCut {
                 operator: OperatorType::Sequence,
                 partitions: log
                     .activities()
@@ -115,7 +119,7 @@ mod tests {
     }
     struct BadSplit(bool);
     impl SplitLog for BadSplit {
-        fn split_log(&self, log: &EventLog, _: &Cut) -> Vec<EventLog> {
+        fn split_log(&self, log: &IndexedEventLog, _: &IndexedCut) -> Vec<IndexedEventLog> {
             if self.0 {
                 vec![log.clone(), log.clone()]
             } else {
@@ -124,7 +128,7 @@ mod tests {
         }
     }
     impl FallThrough for Plugins {
-        fn fall_through(&self, _: &EventLog) -> Node {
+        fn fall_through(&self, _: &IndexedEventLog) -> Node {
             Node::new_leaf(None)
         }
     }
@@ -150,6 +154,23 @@ mod tests {
         assert!(matches!(
             InductiveMiner::new(Plugins, Plugins, BadSplit(true), Plugins).mine(&log),
             Err(MinerError::InvalidSplitAlphabet)
+        ));
+    }
+    #[test]
+    fn rejects_sublogs_with_an_independent_interner() {
+        struct ForeignSplit;
+        impl SplitLog for ForeignSplit {
+            fn split_log(&self, _: &IndexedEventLog, _: &IndexedCut) -> Vec<IndexedEventLog> {
+                vec![
+                    crate::test_support::log(&[&["a"]]).indexed(),
+                    crate::test_support::log(&[&["b"]]).indexed(),
+                ]
+            }
+        }
+        let log = crate::test_support::log(&[&["a", "b"]]);
+        assert!(matches!(
+            InductiveMiner::new(Plugins, Plugins, ForeignSplit, Plugins).mine(&log),
+            Err(MinerError::DifferentInterner)
         ));
     }
 }
