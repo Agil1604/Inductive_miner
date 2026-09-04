@@ -6,21 +6,27 @@ use super::{Activity, event::EventLog};
 /// A frequency-weighted directly-follows abstraction of an event log.
 /// An edge `(a, b)` records how often `b` immediately follows `a` within a trace.
 ///
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub struct DirectlyFollowsGraph {
-    pub activities: HashMap<Activity, usize>,
-    pub edges: HashMap<(Activity, Activity), usize>,
-    pub start_activities: HashMap<Activity, usize>,
-    pub end_activities: HashMap<Activity, usize>,
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DirectlyFollowsGraph<A: Eq + std::hash::Hash = Activity> {
+    pub activities: HashMap<A, usize>,
+    pub edges: HashMap<(A, A), usize>,
+    pub start_activities: HashMap<A, usize>,
+    pub end_activities: HashMap<A, usize>,
     pub empty_trace_count: usize,
 }
 
-impl DirectlyFollowsGraph {
+impl<A: Clone + Eq + std::hash::Hash> DirectlyFollowsGraph<A> {
     ///
     /// Builds a graph from events in their stored trace order.
     ///
-    pub fn from_log(log: &EventLog) -> Self {
-        let mut graph = Self::default();
+    pub fn from_log(log: &EventLog<A>) -> Self {
+        let mut graph = Self {
+            activities: HashMap::new(),
+            edges: HashMap::new(),
+            start_activities: HashMap::new(),
+            end_activities: HashMap::new(),
+            empty_trace_count: 0,
+        };
         for trace in &log.traces {
             let Some(first) = trace.events.first() else {
                 graph.empty_trace_count += 1;
@@ -50,9 +56,21 @@ impl DirectlyFollowsGraph {
     }
 }
 
-impl From<&EventLog> for DirectlyFollowsGraph {
-    fn from(log: &EventLog) -> Self {
+impl<A: Clone + Eq + std::hash::Hash> From<&EventLog<A>> for DirectlyFollowsGraph<A> {
+    fn from(log: &EventLog<A>) -> Self {
         Self::from_log(log)
+    }
+}
+
+impl<A: Eq + std::hash::Hash> Default for DirectlyFollowsGraph<A> {
+    fn default() -> Self {
+        Self {
+            activities: HashMap::new(),
+            edges: HashMap::new(),
+            start_activities: HashMap::new(),
+            end_activities: HashMap::new(),
+            empty_trace_count: 0,
+        }
     }
 }
 
@@ -117,7 +135,7 @@ mod tests {
     #[test]
     fn distinguishes_empty_log_from_empty_trace() {
         assert_eq!(
-            DirectlyFollowsGraph::from_log(&EventLog::default()),
+            DirectlyFollowsGraph::<Activity>::from_log(&EventLog::default()),
             DirectlyFollowsGraph::default()
         );
         let graph = DirectlyFollowsGraph::from_log(&EventLog {

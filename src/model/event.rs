@@ -1,5 +1,5 @@
-use std::collections::HashSet;
 use chrono::{DateTime, Utc};
+use std::collections::HashSet;
 
 use super::Activity;
 
@@ -33,27 +33,27 @@ impl Lifecycle {
 /// Represents an event in a process model
 ///
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Event {
-    pub activity: Activity,
+pub struct Event<A = Activity> {
+    pub activity: A,
     pub lifecycle: Lifecycle,
     pub timestamp: Option<DateTime<Utc>>,
 }
 
 ///
 /// Represents a trace in a process model
-/// 
-#[derive(Debug, Clone, Default)]
-pub struct Trace {
+///
+#[derive(Debug, Clone)]
+pub struct Trace<A = Activity> {
     pub case_id: String,
-    pub events: Vec<Event>,
+    pub events: Vec<Event<A>>,
 }
 
 ///
 /// Represents an event log in a process model
 ///
-#[derive(Debug, Clone, Default)]
-pub struct EventLog {
-    pub traces: Vec<Trace>,
+#[derive(Debug, Clone)]
+pub struct EventLog<A = Activity> {
+    pub traces: Vec<Trace<A>>,
 }
 
 ///
@@ -75,11 +75,21 @@ impl Default for EventClassifier {
         }
     }
 }
-impl EventLog {
+impl<A: Clone + Eq + std::hash::Hash + Ord> EventLog<A> {
+    ///
+    /// Returns distinct activities in lexical order of their names.
+    /// Event order, multiplicities, and metadata do not affect the result.
+    ///
+    pub fn alphabet(&self) -> Vec<A> {
+        let mut activities: Vec<_> = self.activities().into_iter().collect();
+        activities.sort();
+        activities
+    }
+
     ///
     /// Activity alphabet, independent of case identifiers and timestamps.
     ///
-    pub fn activities(&self) -> HashSet<Activity> {
+    pub fn activities(&self) -> HashSet<A> {
         self.traces
             .iter()
             .flat_map(|t| &t.events)
@@ -91,7 +101,7 @@ impl EventLog {
     /// Project recorded lifecycle events to atomic executions. Unannotated events
     /// are assumed atomic; explicitly annotated non-completion events are omitted.
     /// Trace order, duplicate traces, and empty traces are preserved.
-    /// 
+    ///
     pub fn atomic(&self) -> Self {
         Self {
             traces: self
@@ -108,5 +118,20 @@ impl EventLog {
                 })
                 .collect(),
         }
+    }
+}
+
+impl<A> Default for Trace<A> {
+    fn default() -> Self {
+        Self {
+            case_id: String::new(),
+            events: Vec::new(),
+        }
+    }
+}
+
+impl<A> Default for EventLog<A> {
+    fn default() -> Self {
+        Self { traces: Vec::new() }
     }
 }

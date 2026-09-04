@@ -1,5 +1,6 @@
 pub mod directly_follows_graph;
 pub mod event;
+pub mod indexed_log;
 pub mod process_tree;
 
 ///
