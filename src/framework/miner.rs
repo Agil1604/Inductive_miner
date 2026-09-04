@@ -1,4 +1,4 @@
-use super::{BaseCase, DetectCut, FallThrough, SplitLog};
+use super::{BaseCase, DetectCut, FallThrough, FallThroughContext, SplitLog};
 use crate::{EventLog, IndexedEventLog, Node, ProcessTree};
 
 #[derive(thiserror::Error, Debug)]
@@ -25,6 +25,7 @@ pub trait Miner {
 ///
 /// An inductive miner.
 ///
+#[derive(Default)]
 pub struct InductiveMiner<B, C, S, F> {
     base_case: B,
     cut_finder: C,
@@ -83,7 +84,19 @@ where
             return Ok(Node::new_operator_with_children(cut.operator, children));
         }
 
-        let node = self.fall_through.fall_through(log);
+        let recurse = |sublog: &IndexedEventLog| {
+            if !log.shares_interner(sublog) {
+                return Err(MinerError::DifferentInterner);
+            }
+            self.mine_node(sublog)
+        };
+        let find_cut = |sublog: &IndexedEventLog| self.cut_finder.detect_cut(sublog);
+        let context = FallThroughContext {
+            log,
+            recurse: &recurse,
+            find_cut: &find_cut,
+        };
+        let node = self.fall_through.fall_through(&context)?;
         node.validate()?;
         Ok(node)
     }
@@ -128,8 +141,8 @@ mod tests {
         }
     }
     impl FallThrough for Plugins {
-        fn fall_through(&self, _: &IndexedEventLog) -> Node {
-            Node::new_leaf(None)
+        fn fall_through(&self, _: &FallThroughContext<'_>) -> Result<Node, MinerError> {
+            Ok(Node::new_leaf(None))
         }
     }
     #[test]
@@ -172,5 +185,45 @@ mod tests {
             InductiveMiner::new(Plugins, Plugins, ForeignSplit, Plugins).mine(&log),
             Err(MinerError::DifferentInterner)
         ));
+    }
+    #[test]
+    fn recursive_fallthrough_uses_the_current_base_case() {
+        use crate::components::fall_throughs::{EmptyTraces, FallThroughFinder, FlowerModel};
+        struct CustomBase;
+        impl BaseCase for CustomBase {
+            fn base_case(&self, log: &IndexedEventLog) -> Option<Node> {
+                log.traces
+                    .iter()
+                    .all(|t| !t.events.is_empty())
+                    .then(|| Node::new_leaf(Some(Activity::from("configured-base"))))
+            }
+        }
+        struct NoCut;
+        impl DetectCut for NoCut {
+            fn detect_cut(&self, _: &IndexedEventLog) -> Option<IndexedCut> {
+                None
+            }
+        }
+        let miner = InductiveMiner::new(
+            CustomBase,
+            NoCut,
+            BadSplit(false),
+            FallThroughFinder {
+                strategies: EmptyTraces,
+                fallback: FlowerModel,
+            },
+        );
+        let input = crate::test_support::log(&[&[], &["a"]]);
+        let tree = miner.mine(&input).unwrap();
+        assert_eq!(
+            tree.root(),
+            &Node::new_operator_with_children(
+                OperatorType::Xor,
+                vec![
+                    Node::new_leaf(None),
+                    Node::new_leaf(Some(Activity::from("configured-base")))
+                ]
+            )
+        );
     }
 }

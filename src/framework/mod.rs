@@ -1,4 +1,4 @@
 pub mod miner;
 pub mod traits;
 
-pub use traits::{BaseCase, DetectCut, FallThrough, SplitLog};
+pub use traits::{BaseCase, DetectCut, FallThrough, FallThroughContext, SplitLog};

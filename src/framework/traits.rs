@@ -1,4 +1,4 @@
-use crate::{IndexedCut, IndexedEventLog, Node};
+use crate::{IndexedCut, IndexedEventLog, MinerError, Node};
 
 ///
 /// A trait for miners to implement the base case of the recursion.
@@ -25,5 +25,14 @@ pub trait SplitLog {
 /// A trait for miners to implement the fall-through step of the recursion.
 ///
 pub trait FallThrough {
-    fn fall_through(&self, log: &IndexedEventLog) -> Node;
+    fn fall_through(&self, context: &FallThroughContext<'_>) -> Result<Node, MinerError>;
+}
+
+///
+/// Callbacks into the current configured miner.
+///
+pub struct FallThroughContext<'a> {
+    pub log: &'a IndexedEventLog,
+    pub recurse: &'a dyn Fn(&IndexedEventLog) -> Result<Node, MinerError>,
+    pub find_cut: &'a dyn Fn(&IndexedEventLog) -> Option<IndexedCut>,
 }

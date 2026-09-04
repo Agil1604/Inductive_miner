@@ -68,14 +68,7 @@ impl IndexedEventLog {
         let ids: HashMap<_, _> = names
             .iter()
             .enumerate()
-            .map(|(i, a)| {
-                (
-                    a.clone(),
-                    ActivityId(
-                        usize::try_from(i).expect("activity alphabet exceeds usize capacity"),
-                    ),
-                )
-            })
+            .map(|(i, a)| (a.clone(), ActivityId(i)))
             .collect();
         let traces = log
             .traces
@@ -107,10 +100,6 @@ impl IndexedEventLog {
             log: EventLog { traces },
             interner: Arc::clone(&self.interner),
         }
-    }
-
-    pub(crate) fn log_mut_traces(&mut self) -> &mut Vec<Trace<ActivityId>> {
-        &mut self.log.traces
     }
 
     pub fn interner(&self) -> &ActivityInterner {
