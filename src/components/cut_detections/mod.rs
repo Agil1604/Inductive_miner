@@ -1,10 +1,12 @@
 mod common;
 mod concurrent_cut;
+mod filtering;
 mod loop_cut;
 mod sequence_cut;
 mod xor_cut;
 
 pub use concurrent_cut::ConcurrentCut;
+pub use filtering::{FilteringCutFinder, filter_dfg};
 pub use loop_cut::LoopCut;
 pub use sequence_cut::SequenceCut;
 pub use xor_cut::XorCut;
@@ -39,6 +41,19 @@ impl<'a> CutContext<'a> {
             dfg,
             witnesses: OnceCell::new(),
         })
+    }
+
+    ///
+    /// Preserve the original alphabet and cached witnesses when changing only
+    /// the DFG abstraction for a filtering pass.
+    ///
+    pub fn with_dfg(&self, dfg: IndexedDfg) -> Self {
+        Self {
+            log: self.log,
+            activities: self.activities.clone(),
+            dfg,
+            witnesses: self.witnesses.clone(),
+        }
     }
 
     pub fn log(&self) -> &IndexedEventLog {
