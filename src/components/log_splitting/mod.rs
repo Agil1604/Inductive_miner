@@ -1,15 +1,21 @@
-//! Reusable operator-specific log splitters for standard Inductive Miner.
+//! Reusable operator-specific log splitters for standard and infrequent Inductive Miner.
 mod common;
 mod concurrent_split;
 mod loop_split;
+mod loop_split_filtering;
 mod sequence_split;
+mod sequence_split_filtering;
 mod xor_split;
+mod xor_split_filtering;
 
 pub(crate) use common::project;
 pub use concurrent_split::ConcurrentSplit;
 pub use loop_split::LoopSplit;
+pub use loop_split_filtering::LoopSplitFiltering;
 pub use sequence_split::SequenceSplit;
+pub use sequence_split_filtering::SequenceSplitFiltering;
 pub use xor_split::XorSplit;
+pub use xor_split_filtering::XorSplitFiltering;
 
 use crate::framework::SplitLog;
 use crate::{IndexedCut, IndexedEventLog, OperatorType};
@@ -32,7 +38,7 @@ impl<X: SplitLog, S: SplitLog, C: SplitLog, L: SplitLog> SplitLog for LogSplitte
             OperatorType::Concurrent => self.concurrent.split_log(log, cut),
             OperatorType::Loop => self.loop_split.split_log(log, cut),
             OperatorType::Interleaved => Vec::new(),
-            OperatorType::InclusiveChoice => Vec::new(), 
+            OperatorType::InclusiveChoice => Vec::new(),
         }
     }
 }
