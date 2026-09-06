@@ -3,36 +3,117 @@ use quick_xml::Reader;
 use quick_xml::events::Event as XmlEvent;
 use std::{fs::File, io::BufReader, path::Path};
 
+/// Errors returned by [`read_xes`] and [`read_xes_from_reader`].
+///
+/// Distinguishes file access, XML parsing, unsupported XES structure, and
+/// invalid or missing event data. This reader checks the structure it needs
+/// to construct an event log; it does not perform full XES schema validation.
 #[derive(thiserror::Error, Debug)]
 pub enum XesError {
+    /// Opening the input file failed.
+    ///
+    /// I/O failures encountered while parsing a reader are reported through
+    /// [`Self::Xml`] by the XML parser.
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
 
+    /// The XML parser could not read or decode the document or attribute values.
     #[error("XML parse error: {0}")]
     Xml(#[from] quick_xml::Error),
 
+    /// An XML attribute is malformed, for example because its value is unquoted
+    /// or its name occurs more than once on the same element.
     #[error("XML attribute error: {0}")]
     XmlAttr(#[from] quick_xml::events::attributes::AttrError),
 
+    /// Parsing reached the end of the document without finding a `<log>` element.
     #[error("not a valid XES file: missing <log> element")]
     NotXes,
 
+    /// The document violates the reader's expected element structure.
+    ///
+    /// The contained message describes the problem, such as a trace outside
+    /// the log, an event outside a trace, or an unclosed element at end of input.
     #[error("invalid XES structure: {0}")]
     Structure(String),
 
+    /// An event has no attribute matching [`EventClassifier::activity_key`],
+    /// even after applying global event defaults.
     #[error("event is missing its activity attribute")]
     MissingActivity,
 
+    /// A present timestamp selected by [`EventClassifier::timestamp_key`] could
+    /// not be parsed as RFC 3339. Missing timestamps do not produce this error.
     #[error("invalid timestamp: {0}")]
     Timestamp(#[from] chrono::ParseError),
 }
 
+/// Reads an XES file into an event log using buffered file access.
+///
+/// `path` identifies the file to open. `classifier` selects the event attributes
+/// used for activity names, timestamps, and lifecycle transitions; its default
+/// uses `concept:name`, `time:timestamp`, and `lifecycle:transition`.
+/// See [`read_xes_from_reader`] for parsing and metadata handling.
+///
+/// # Errors
+/// Returns [`XesError::Io`] if the file cannot be opened, or a parsing error
+/// from [`read_xes_from_reader`] if its contents cannot be read as an event log.
+///
+/// # Examples
+/// ```no_run
+/// use std::path::Path;
+/// use robust_process_mining_with_guarantees::{EventClassifier, io::read_xes};
+///
+/// let log = read_xes(Path::new("log.xes"), &EventClassifier::default())?;
+/// println!("Read {} traces", log.traces.len());
+/// # Ok::<(), robust_process_mining_with_guarantees::io::read_xes::XesError>(())
+/// ```
 pub fn read_xes(path: &Path, classifier: &EventClassifier) -> Result<EventLog, XesError> {
     let file = File::open(path)?;
     let reader = BufReader::new(file);
     read_xes_from_reader(reader, classifier)
 }
 
+/// Parses XES file from a buffered reader into an event log.
+///
+/// Accepts any [`std::io::BufRead`]. Traces and events retain their document order,
+/// duplicates, and empty traces. Events are neither sorted by timestamp nor filtered
+/// by lifecycle; use [`EventLog::atomic`] to project lifecycle events to atomic executions.
+///
+/// `classifier` selects activity, timestamp, and lifecycle attribute keys.
+/// Direct attributes in `<global scope="event">` provide defaults for events
+/// read afterward; an event's own direct attributes override those defaults.
+/// Activity names are required. Absent timestamps become `None`, while absent
+/// lifecycle values become [`Lifecycle::Unknown`]. Setting an optional classifier
+/// key to `None` disables reading that field. Present timestamps are parsed as
+/// RFC 3339 and converted to UTC.
+///
+/// A trace's direct `concept:name` attribute becomes its case ID, defaulting to
+/// an empty string when absent. Other metadata and nested attribute values are
+/// ignored. The reader checks the structure needed to construct the log, rather
+/// than validating the complete XES schema.
+///
+/// # Errors
+/// Returns [`XesError::Xml`] or [`XesError::XmlAttr`] for XML parsing failures
+/// (including input read failures), [`XesError::NotXes`] when no `<log>` is found,
+/// or [`XesError::Structure`] for invalid element placement or unclosed elements.
+/// Returns [`XesError::MissingActivity`] when an event lacks the selected activity
+/// attribute after defaults, or [`XesError::Timestamp`] for an invalid selected
+/// timestamp.
+///
+/// # Examples
+/// ```
+/// use robust_process_mining_with_guarantees::{EventClassifier, io::read_xes_from_reader};
+///
+/// let xml = br#"<log><trace>
+///     <string key="concept:name" value="case-1"/>
+///     <event><string key="concept:name" value="A"/></event>
+/// </trace></log>"#;
+/// let log = read_xes_from_reader(xml.as_slice(), &EventClassifier::default())?;
+/// assert_eq!(log.traces[0].case_id, "case-1");
+/// assert_eq!(log.traces[0].events[0].activity.0, "A");
+/// # Ok::<(), robust_process_mining_with_guarantees::io::read_xes::XesError>(())
+/// ```
 pub fn read_xes_from_reader<R: std::io::BufRead>(
     reader: R,
     classifier: &EventClassifier,
