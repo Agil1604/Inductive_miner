@@ -1,3 +1,5 @@
+//! Compact activity IDs and shared immutable mappings back to activity names.
+
 use super::{
     Activity,
     event::{Event, EventLog, Trace},
@@ -9,12 +11,19 @@ use std::{
 };
 
 ///
-/// Activity identifier
+/// An activity's numeric index in one [`ActivityInterner`].
+///
+/// IDs are local to their interner. Equal numeric IDs from independently encoded
+/// logs need not identify the same name. Use [`IndexedEventLog::shares_interner`]
+/// before combining logs, and resolve names through the originating table.
 ///
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct ActivityId(usize);
+pub struct ActivityId(
+    /// Zero-based position in the originating name table.
+    usize,
+);
 impl ActivityId {
-    /// Getter for activity index
+    /// Returns the zero-based index within the originating interner.
     pub fn index(self) -> usize {
         self.0
     }
@@ -26,25 +35,33 @@ impl ActivityId {
 ///
 #[derive(Debug, Default)]
 pub struct ActivityInterner {
+    /// Names in lexical order, indexed by activity ID.
     names: Vec<Activity>,
+    /// Reverse lookup from owned names to their IDs.
     ids: HashMap<Activity, ActivityId>,
 }
 impl ActivityInterner {
     ///
     /// Looks up an existing name without adding an activity.
+    /// Returns `None` when the name is absent from this table.
     ///
     pub fn id(&self, activity: &Activity) -> Option<ActivityId> {
         self.ids.get(activity).copied()
     }
     ///
     /// Resolves an ID. IDs from another interner must not be used here.
+    /// Returns `None` if the numeric index is outside this table. An in-range
+    /// ID from another table cannot be distinguished and may resolve incorrectly.
     ///
     pub fn resolve(&self, id: ActivityId) -> Option<&Activity> {
         self.names.get(id.index())
     }
+    /// Returns the number of distinct names in the table, including names no
+    /// longer present in a derived sublog.
     pub fn len(&self) -> usize {
         self.names.len()
     }
+    /// Returns whether the name table contains no activities.
     pub fn is_empty(&self) -> bool {
         self.names.is_empty()
     }
@@ -53,15 +70,25 @@ impl ActivityInterner {
 ///
 /// Encoded log retaining metadata and sharing its immutable name table.
 ///
+/// Dereferences to [`EventLog<ActivityId>`] for read access. Cloning copies traces
+/// and events but shares the name table through reference counting. Derived
+/// sublogs preserve IDs even when some activities are no longer present.
+///
 #[derive(Debug, Clone)]
 pub struct IndexedEventLog {
+    /// Events encoded with local activity IDs.
     log: EventLog<ActivityId>,
+    /// Name table shared by this log and its recursive sublogs.
     interner: Arc<ActivityInterner>,
 }
 
 impl IndexedEventLog {
     ///
     /// Encodes activity names once, preserving trace order and metadata.
+    ///
+    /// Distinct names receive consecutive IDs in lexical order. Empty traces,
+    /// duplicates, case IDs, timestamps, and lifecycle values are preserved.
+    /// Every call creates a new interner, even for equal input logs.
     ///
     pub fn from_log(log: &EventLog) -> Self {
         let names = log.alphabet();
@@ -95,6 +122,9 @@ impl IndexedEventLog {
     ///
     /// Creates a sublog using this log's name table.
     ///
+    /// Takes ownership of `traces` without re-encoding or validating their IDs.
+    /// All supplied activity IDs must originate from this log's interner.
+    ///
     pub fn with_traces(&self, traces: Vec<Trace<ActivityId>>) -> Self {
         Self {
             log: EventLog { traces },
@@ -102,12 +132,20 @@ impl IndexedEventLog {
         }
     }
 
+    /// Borrows the shared name table for lookup and reverse resolution.
     pub fn interner(&self) -> &ActivityInterner {
         &self.interner
     }
 
     ///
     /// Resolves a local ID to its original activity name.
+    ///
+    /// The ID must originate from this log's interner; foreign IDs with in-range
+    /// indices can silently resolve to another name.
+    ///
+    /// # Panics
+    /// Panics when the ID's numeric index is outside the name table. Use
+    /// [`ActivityInterner::resolve`] for a bounds-checked optional result.
     ///
     pub fn resolve(&self, id: ActivityId) -> &Activity {
         self.interner
@@ -122,17 +160,22 @@ impl IndexedEventLog {
         Arc::ptr_eq(&self.interner, &other.interner)
     }
 
+    /// Returns distinct IDs present in this log, excluding unused table entries.
     pub fn activities(&self) -> HashSet<ActivityId> {
         self.log.activities()
     }
 
+    /// Returns present activity IDs in ascending index order, corresponding to
+    /// the original names' lexical order. A sublog's IDs need not be consecutive.
     pub fn alphabet(&self) -> Vec<ActivityId> {
         self.log.alphabet()
     }
 }
 
 impl Deref for IndexedEventLog {
+    /// Underlying event log using local activity IDs.
     type Target = EventLog<ActivityId>;
+    /// Borrows the encoded log without exposing mutable access.
     fn deref(&self) -> &Self::Target {
         &self.log
     }
@@ -141,6 +184,9 @@ impl Deref for IndexedEventLog {
 impl EventLog {
     ///
     /// Encodes this log for mining; recursive sublogs share the resulting table.
+    ///
+    /// Equivalent to [`IndexedEventLog::from_log`]. Each invocation creates an
+    /// independent interner; use [`IndexedEventLog::with_traces`] for sublogs.
     ///
     pub fn indexed(&self) -> IndexedEventLog {
         IndexedEventLog::from_log(self)
