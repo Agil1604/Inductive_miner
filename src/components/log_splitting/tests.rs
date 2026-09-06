@@ -118,3 +118,128 @@ fn empty_sublogs_retain_the_original_interner() {
             && s.traces[0].events.is_empty())
     );
 }
+
+#[test]
+fn filtered_xor_selects_majority_and_keeps_duplicates() {
+    let input = log(&[
+        &["a", "b"],
+        &["c", "c", "c"],
+        &["a", "b", "c"],
+        &["a", "c"],
+        &[],
+    ]);
+    let c = cut(&input, OperatorType::Xor, &[&["a", "b"], &["c"]]);
+    let split = XorSplitFiltering.split_log(&input, &c);
+    assert_eq!(
+        sequences(&split[0]),
+        vec![vec!["a", "b"], vec!["a", "b"], vec!["a"], vec![]]
+    );
+    assert_eq!(sequences(&split[1]), vec![vec!["c", "c", "c"]]);
+    assert!(split.iter().all(|s| input.shares_interner(s)));
+    let input = log(&[&["a", "b", "b"]]);
+    let c = cut(&input, OperatorType::Xor, &[&["a"], &["b"]]);
+    let split = XorSplitFiltering.split_log(&input, &c);
+    assert!(split[0].traces.is_empty());
+    assert_eq!(sequences(&split[1]), vec![vec!["b", "b"]]);
+}
+#[test]
+fn filtered_sequence_uses_per_trace_boundaries_and_discards_wrong_side_events() {
+    let input = log(&[&["a", "b", "a", "a", "b"], &["b", "b", "a"], &["a", "b"]]);
+    let c = cut(&input, OperatorType::Sequence, &[&["a"], &["b"]]);
+    let split = SequenceSplitFiltering.split_log(&input, &c);
+    assert_eq!(
+        sequences(&split[0]),
+        vec![vec!["a", "a", "a"], vec![], vec!["a"]]
+    );
+    assert_eq!(
+        sequences(&split[1]),
+        vec![vec!["b"], vec!["b", "b"], vec!["b"]]
+    );
+    assert!(split.iter().all(|s| input.shares_interner(s)));
+    let input = log(&[&["a", "b", "c"], &["b", "a", "c"], &["c", "a", "b", "c"]]);
+    let c = cut(&input, OperatorType::Sequence, &[&["a", "b"], &["c"]]);
+    let split = SequenceSplitFiltering.split_log(&input, &c);
+    assert_eq!(
+        sequences(&split[0]),
+        vec![vec!["a", "b"], vec!["b", "a"], vec!["a", "b"]]
+    );
+    assert_eq!(sequences(&split[1]), vec![vec!["c"]; 3]);
+}
+#[test]
+fn filtered_loop_repairs_missing_initial_and_final_body_runs() {
+    let input = log(&[&["b", "a"], &["a", "b"], &["b"], &[], &["a", "b", "a"]]);
+    let c = cut(&input, OperatorType::Loop, &[&["a"], &["b"]]);
+    let split = LoopSplitFiltering.split_log(&input, &c);
+    assert_eq!(
+        sequences(&split[0]),
+        vec![
+            vec![],
+            vec!["a"],
+            vec!["a"],
+            vec![],
+            vec![],
+            vec![],
+            vec![],
+            vec!["a"],
+            vec!["a"]
+        ]
+    );
+    assert_eq!(sequences(&split[1]), vec![vec!["b"]; 4]);
+    assert!(split.iter().all(|s| input.shares_interner(s)));
+}
+#[test]
+fn filtered_splitters_equal_standard_splits_for_valid_cuts() {
+    for (input, operator, parts, standard, filtered) in [
+        (
+            log(&[&["a"], &["b"], &["a"]]),
+            OperatorType::Xor,
+            vec![vec!["a"], vec!["b"]],
+            &XorSplit as &dyn SplitLog,
+            &XorSplitFiltering as &dyn SplitLog,
+        ),
+        (
+            log(&[&["a", "b"], &["b"]]),
+            OperatorType::Sequence,
+            vec![vec!["a"], vec!["b"]],
+            &SequenceSplit,
+            &SequenceSplitFiltering,
+        ),
+        (
+            log(&[&["a", "b", "a"], &["a"]]),
+            OperatorType::Loop,
+            vec![vec!["a"], vec!["b"]],
+            &LoopSplit,
+            &LoopSplitFiltering,
+        ),
+    ] {
+        let refs: Vec<_> = parts.iter().map(|p| p.as_slice()).collect();
+        let c = cut(&input, operator, &refs);
+        let left = standard.split_log(&input, &c);
+        let right = filtered.split_log(&input, &c);
+        for (a, b) in left.iter().zip(&right) {
+            assert_eq!(sequences(a), sequences(b));
+            assert_eq!(
+                a.traces.iter().map(|t| &t.case_id).collect::<Vec<_>>(),
+                b.traces.iter().map(|t| &t.case_id).collect::<Vec<_>>()
+            );
+        }
+    }
+}
+#[test]
+fn imf_dispatcher_preserves_metadata_on_retained_events() {
+    let input = log(&[&["a", "b", "a", "a", "b"]]);
+    let mut traces = input.traces.clone();
+    let timestamp = chrono::DateTime::parse_from_rfc3339("2026-10-03T12:00:00Z")
+        .unwrap()
+        .with_timezone(&chrono::Utc);
+    traces[0].events[3].timestamp = Some(timestamp);
+    traces[0].events[3].lifecycle = Lifecycle::Complete;
+    let input = input.with_traces(traces);
+    let c = cut(&input, OperatorType::Sequence, &[&["a"], &["b"]]);
+    let split = crate::ImfConfig::default()
+        .log_splitter()
+        .split_log(&input, &c);
+    assert_eq!(split[0].traces[0].events[2].timestamp, Some(timestamp));
+    assert_eq!(split[0].traces[0].events[2].lifecycle, Lifecycle::Complete);
+    assert_eq!(split[0].traces[0].case_id, "0");
+}
