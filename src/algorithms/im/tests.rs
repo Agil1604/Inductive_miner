@@ -2,9 +2,7 @@ use super::{ImCutFinder, ImFallThrough, ImLogSplitter};
 use crate::framework::{DetectCut, FallThrough, FallThroughContext, SplitLog};
 use crate::test_support::log;
 use crate::{Activity, EventLog, IM, LeafType, Miner, Node, OperatorType};
-#[path = "../../../tests/support/im_fitness.rs"]
-mod fitness;
-use crate as library;
+use crate::test_fitness as fitness;
 use fitness::check_fitness;
 use fitness::language;
 fn root_op(log: &EventLog) -> OperatorType {
