@@ -1,12 +1,14 @@
 mod common;
 mod concurrent_cut;
 mod filtering;
+mod probabilistic;
 mod loop_cut;
 mod sequence_cut;
 mod xor_cut;
 
 pub use concurrent_cut::ConcurrentCut;
 pub use filtering::{FilteringCutFinder, filter_dfg};
+pub use probabilistic::ImcCutFinder;
 pub use loop_cut::LoopCut;
 pub use sequence_cut::SequenceCut;
 pub use xor_cut::XorCut;
