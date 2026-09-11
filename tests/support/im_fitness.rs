@@ -75,7 +75,48 @@ pub fn language(n: &Node, max: usize) -> Language {
                     }
                     result
                 }
-                _ => panic!("standard IM must use only four operators"),
+                OperatorType::Interleaved => {
+                    fn orders(parts: &[Language], max: usize) -> Language {
+                        if parts.is_empty() {
+                            return HashSet::from([vec![]]);
+                        }
+                        let mut result = HashSet::new();
+                        for i in 0..parts.len() {
+                            let rest: Vec<_> = parts
+                                .iter()
+                                .enumerate()
+                                .filter(|(j, _)| *j != i)
+                                .map(|(_, p)| p.clone())
+                                .collect();
+                            result.extend(concat(&parts[i], &orders(&rest, max), max));
+                        }
+                        result
+                    }
+                    orders(&children, max)
+                }
+                OperatorType::InclusiveChoice => {
+                    // Independently select every nonempty subset of children,
+                    // then compute all shuffles of the selected languages.
+                    let mut result = HashSet::new();
+                    for mask in 1usize..(1usize << children.len()) {
+                        let mut selected = HashSet::from([vec![]]);
+                        for (i, child) in children.iter().enumerate() {
+                            if mask & (1 << i) != 0 {
+                                selected = selected
+                                    .iter()
+                                    .flat_map(|a| {
+                                        child
+                                            .iter()
+                                            .filter(|b| a.len() + b.len() <= max)
+                                            .flat_map(|b| shuffles(a, b))
+                                    })
+                                    .collect();
+                            }
+                        }
+                        result.extend(selected);
+                    }
+                    result
+                }
             }
         }
     }
