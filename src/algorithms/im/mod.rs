@@ -1,4 +1,5 @@
 use crate::InductiveMiner;
+
 use crate::components::base_cases::{BaseCaseChain, EmptyLog, SingleActivity};
 use crate::components::cut_detections::{
     ConcurrentCut, CutChain, CutFinder, LoopCut, SequenceCut, XorCut,
@@ -11,9 +12,9 @@ use crate::components::log_splitting::{
     ConcurrentSplit, LogSplitter, LoopSplit, SequenceSplit, XorSplit,
 };
 
+/// Basic Inductive Miner, discovering process trees with four operators.
 ///
-/// Standard IM. Construct with `IM::default()` and import [`crate::Miner`] to call `mine`.
-///
+/// Construct with `IM::default()` and import [`crate::Miner`] to call `mine`.
 pub type IM = InductiveMiner<ImBaseCase, ImCutFinder, ImLogSplitter, ImFallThrough>;
 
 pub type ImBaseCase = BaseCaseChain<EmptyLog, SingleActivity>;

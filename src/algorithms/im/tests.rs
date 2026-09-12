@@ -1,10 +1,12 @@
 use super::{ImCutFinder, ImFallThrough, ImLogSplitter};
+use crate::algorithms::IM;
 use crate::framework::{DetectCut, FallThrough, FallThroughContext, SplitLog};
-use crate::test_support::log;
-use crate::{Activity, EventLog, IM, LeafType, Miner, Node, OperatorType};
 use crate::test_fitness as fitness;
+use crate::test_support::log;
+use crate::{Activity, EventLog, LeafType, Miner, Node, OperatorType};
 use fitness::check_fitness;
 use fitness::language;
+
 fn root_op(log: &EventLog) -> OperatorType {
     match IM::default().mine(log).unwrap().root() {
         Node::Operator(o) => o.operator_type,

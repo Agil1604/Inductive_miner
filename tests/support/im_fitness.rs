@@ -1,4 +1,6 @@
-use super::library::{EventLog, IM, LeafType, Miner, Node, OperatorType};
+use crate::algorithms::IM;
+
+use super::library::{EventLog, LeafType, Miner, Node, OperatorType};
 #[cfg(test)]
 use std::collections::HashSet;
 

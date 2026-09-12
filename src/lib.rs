@@ -4,8 +4,6 @@ pub mod framework;
 pub mod model;
 pub mod io;
 
-pub use algorithms::*;
-
 pub use framework::miner::{InductiveMiner, Miner, MinerError};
 
 pub use model::Activity;

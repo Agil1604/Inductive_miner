@@ -1,4 +1,5 @@
 use crate::InductiveMiner;
+
 use crate::components::base_cases::{BaseCaseChain, EmptyLog, SingleActivity};
 use crate::components::cut_detections::{
     CooCut, CutChain, CutFinder, InterleavedCut, LoopCut, SequenceCutStrict, XorCut,
@@ -12,6 +13,9 @@ use crate::components::log_splitting::{
     LoopSplit, SequenceSplit, XorSplit,
 };
 
+/// Inductive Miner with all six operators, including interleaved and inclusive choice.
+///
+/// Construct with `IMa::default()` and import [`crate::Miner`] to call `mine`.
 pub type IMa = InductiveMiner<ImaBaseCase, ImaCutFinder, ImaLogSplitter, ImaFallThrough>;
 
 pub type ImaBaseCase = BaseCaseChain<EmptyLog, SingleActivity>;

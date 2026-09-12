@@ -1,6 +1,9 @@
 use super::*;
 
+use crate::algorithms::IMc;
 use crate::algorithms::im::ImCutFinder;
+use crate::test_support::{indexed_log, log};
+use crate::{Activity, Miner};
 
 #[test]
 fn standard_im_cuts_take_precedence_including_nonbinary_cuts() {
@@ -25,8 +28,6 @@ fn standard_im_cuts_take_precedence_including_nonbinary_cuts() {
         2
     );
 }
-use crate::test_support::{indexed_log, log};
-use crate::{Activity, IMc, Miner};
 
 #[test]
 fn table_6_2_all_nine_evidence_rows() {

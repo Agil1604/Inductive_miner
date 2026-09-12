@@ -10,12 +10,17 @@ use crate::components::fall_throughs::{
     ActivityConcurrent, ActivityOncePerTrace, EmptyTracesFiltering, FallThroughChain,
     FallThroughFinder, FlowerModel, StrictTauLoop, TauLoop,
 };
-use crate::components::filtering::FilteringConfig;
 use crate::components::log_splitting::{
     ConcurrentSplit, LogSplitter, LoopSplitFiltering, SequenceSplitFiltering, XorSplitFiltering,
 };
 
-/// Inductive Miner with infrequent/deviating behaviour filtering.
+use crate::components::filtering::FilteringConfig;
+
+/// Inductive Miner for infrequent and deviating behaviour.
+/// Filtering can discard observed behaviour.
+///
+/// Construct with `IMf::default()` or [`FilteringConfig::imf`] and import
+/// [`crate::Miner`] to call `mine`.
 pub type IMf = InductiveMiner<ImfBaseCase, ImfCutFinder, ImfLogSplitter, ImfFallThrough>;
 
 pub type ImfBaseCase = WithoutEmptyTraces<BaseCaseChain<EmptyLog, SingleActivityFiltering>>;
