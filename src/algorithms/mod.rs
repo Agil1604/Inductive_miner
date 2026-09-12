@@ -6,7 +6,7 @@ pub use ima::IMa;
 pub use im::IM;
 
 pub mod imf;
-pub use imf::{IMf, ImfConfig};
+pub use imf::IMf;
 
 pub mod imc;
 pub use imc::IMc;

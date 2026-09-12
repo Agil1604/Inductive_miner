@@ -1,13 +1,26 @@
-use crate::algorithms::imf::ImfConfig;
+use crate::components::filtering::FilteringConfig;
 use crate::framework::BaseCase;
 use crate::{IndexedEventLog, Node};
 
+/// Returns an activity leaf when a single-activity log is sufficiently close
+/// to one execution per trace.
 ///
-/// Single-activity base case with filtering.
+/// For a log with exactly one distinct activity, estimates the geometric
+/// parameter `p = trace_count / (event_count + trace_count)`. A log with one
+/// event per trace has `p = 0.5`. The base case matches when
+/// `abs(p - 0.5) <= config.deviation_threshold()`, including equality.
+/// Repeated executions can therefore be simplified to a single activity leaf.
 ///
+/// This component includes empty traces in the estimate. 
+/// Logs with no activities or more than one distinct activity return `None`.
+/// Returned leaves resolve the interned activity ID to its original name.
+/// Filtering may discard observed behaviour or introduce a single execution
+/// not present in the log.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct SingleActivityFiltering {
-    pub config: ImfConfig,
+    /// Allowed deviation of the estimated parameter from `0.5`.
+    /// The default configuration uses `0.2`.
+    pub config: FilteringConfig,
 }
 impl BaseCase for SingleActivityFiltering {
     fn base_case(&self, log: &IndexedEventLog) -> Option<Node> {
@@ -35,7 +48,7 @@ mod tests {
     #[test]
     fn accepts_exact_single_activity_and_estimated_boundary() {
         let case = SingleActivityFiltering {
-            config: ImfConfig::new(0.0).unwrap(),
+            config: FilteringConfig::new(0.0).unwrap(),
         };
         assert_eq!(
             case.base_case(&log(&[&["a"], &["a"]])),
@@ -45,14 +58,14 @@ mod tests {
         let input = log(&[&["a", "a", "a"], &["a", "a", "a"]]);
         assert!(
             SingleActivityFiltering {
-                config: ImfConfig::new(0.25).unwrap()
+                config: FilteringConfig::new(0.25).unwrap()
             }
             .base_case(&input)
             .is_some()
         );
         assert!(
             SingleActivityFiltering {
-                config: ImfConfig::new(0.24).unwrap()
+                config: FilteringConfig::new(0.24).unwrap()
             }
             .base_case(&input)
             .is_none()

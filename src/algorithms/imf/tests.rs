@@ -20,7 +20,11 @@ fn defaults_and_empty_logs() {
     let input = log(&[&["a", "b"]]);
     assert_eq!(
         IMf::default().mine(&input).unwrap().root(),
-        ImfConfig::default().miner().mine(&input).unwrap().root()
+        FilteringConfig::default()
+            .imf()
+            .mine(&input)
+            .unwrap()
+            .root()
     );
 }
 
@@ -28,26 +32,26 @@ fn defaults_and_empty_logs() {
 fn empty_trace_threshold_is_inclusive_and_precedes_base_cases() {
     let input = log(&[&[], &["a"], &["a"], &["a"], &["a"]]);
     let indexed = input.indexed();
-    let config = ImfConfig::new(0.2).unwrap();
+    let config = FilteringConfig::new(0.2).unwrap();
     assert!(config.base_cases().base_case(&indexed).is_none());
-    assert!(config.cut_finder().detect_cut(&indexed).is_none());
+    assert!(config.imf_cut_finder().detect_cut(&indexed).is_none());
     assert_eq!(
-        config.miner().mine(&input).unwrap().root(),
+        config.imf().mine(&input).unwrap().root(),
         &Node::new_operator_with_children(OperatorType::Xor, vec![Node::new_leaf(None), leaf("a")])
     );
     assert_eq!(
-        ImfConfig::new(0.21)
+        FilteringConfig::new(0.21)
             .unwrap()
-            .miner()
+            .imf()
             .mine(&input)
             .unwrap()
             .root(),
         &leaf("a")
     );
     assert_eq!(
-        ImfConfig::new(1.0)
+        FilteringConfig::new(1.0)
             .unwrap()
-            .miner()
+            .imf()
             .mine(&input)
             .unwrap()
             .root(),
@@ -81,7 +85,11 @@ fn filters_rare_reverse_behavior_and_recursively_filters_empty_projections() {
     let mut words = vec![&["a", "b"][..]; 10];
     words.extend([&["b", "a"][..], &["a", "b", "a"][..]]);
     let input = log(&words);
-    let tree = ImfConfig::new(0.3).unwrap().miner().mine(&input).unwrap();
+    let tree = FilteringConfig::new(0.3)
+        .unwrap()
+        .imf()
+        .mine(&input)
+        .unwrap();
     assert_eq!(
         tree.root(),
         &Node::new_operator_with_children(OperatorType::Sequence, vec![leaf("a"), leaf("b")])
@@ -92,12 +100,20 @@ fn filters_rare_reverse_behavior_and_recursively_filters_empty_projections() {
 #[test]
 fn configured_threshold_reaches_recursive_single_activity_base_case() {
     let input = log(&[&["a", "a", "b"]]);
-    let filtered = ImfConfig::new(0.2).unwrap().miner().mine(&input).unwrap();
+    let filtered = FilteringConfig::new(0.2)
+        .unwrap()
+        .imf()
+        .mine(&input)
+        .unwrap();
     assert_eq!(
         filtered.root(),
         &Node::new_operator_with_children(OperatorType::Sequence, vec![leaf("a"), leaf("b")])
     );
-    let unfiltered = ImfConfig::new(0.0).unwrap().miner().mine(&input).unwrap();
+    let unfiltered = FilteringConfig::new(0.0)
+        .unwrap()
+        .imf()
+        .mine(&input)
+        .unwrap();
     assert!(fitness::language(unfiltered.root(), 3).contains(&vec![
         "a".into(),
         "a".into(),
@@ -117,7 +133,7 @@ fn zero_threshold_preserves_all_pairs_of_short_binary_traces() {
             );
         }
     }
-    let miner = ImfConfig::new(0.0).unwrap().miner();
+    let miner = FilteringConfig::new(0.0).unwrap().imf();
     for a in &words {
         for b in &words {
             let input = log(&[a, b]);

@@ -15,6 +15,8 @@ pub use model::process_tree::{
     Cut, CutError, Leaf, LeafType, Node, Operator, OperatorType, ProcessTree, TreeError,
 };
 
+pub use components::filtering::{FilteringConfig, InvalidDeviationThreshold};
+
 // Shared helpers compiled only for this crate's unit tests.
 #[cfg(test)]
 #[path = "../tests/support/log.rs"]

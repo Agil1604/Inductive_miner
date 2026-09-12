@@ -1,5 +1,5 @@
 use super::{CutContext, CutStrategy};
-use crate::algorithms::imf::ImfConfig;
+use crate::components::filtering::FilteringConfig;
 use crate::framework::DetectCut;
 use crate::{IndexedCut, IndexedDfg, IndexedEventLog};
 use std::collections::HashMap;
@@ -7,7 +7,7 @@ use std::collections::HashMap;
 ///
 /// Filters edges relative to the maximum outgoing frequency of their source.
 ///
-pub fn filter_dfg(graph: &IndexedDfg, config: ImfConfig) -> IndexedDfg {
+pub fn filter_dfg(graph: &IndexedDfg, config: FilteringConfig) -> IndexedDfg {
     let f = config.deviation_threshold();
     let mut maxima = HashMap::new();
     for (&(source, _), &count) in &graph.edges {
@@ -43,7 +43,7 @@ pub fn filter_dfg(graph: &IndexedDfg, config: ImfConfig) -> IndexedDfg {
 #[derive(Debug, Clone, Copy, Default)]
 pub struct FilteringCutFinder<S> {
     pub strategy: S,
-    pub config: ImfConfig,
+    pub config: FilteringConfig,
 }
 impl<S: CutStrategy> DetectCut for FilteringCutFinder<S> {
     fn detect_cut(&self, log: &IndexedEventLog) -> Option<IndexedCut> {
@@ -73,13 +73,13 @@ mod tests {
         graph.edges = HashMap::from([((a, b), 10), ((a, c), 2), ((b, c), 1)]);
         graph.start_activities = HashMap::from([(a, 10), (b, 2), (c, 1)]);
         graph.end_activities = HashMap::from([(a, 1), (b, 10), (c, 1)]);
-        let filtered = filter_dfg(&graph, ImfConfig::new(0.2).unwrap());
+        let filtered = filter_dfg(&graph, FilteringConfig::new(0.2).unwrap());
         assert_eq!(filtered.edges, HashMap::from([((a, b), 10), ((a, c), 2)]));
         assert_eq!(filtered.start_activities, HashMap::from([(a, 10), (b, 2)]));
         assert_eq!(filtered.end_activities, HashMap::from([(b, 10), (c, 1)]));
         assert_eq!(filtered.activities, graph.activities);
         assert_eq!(graph.edges.len(), 3);
-        assert_eq!(filter_dfg(&graph, ImfConfig::new(0.0).unwrap()), graph);
+        assert_eq!(filter_dfg(&graph, FilteringConfig::new(0.0).unwrap()), graph);
     }
     #[test]
     fn unfiltered_cuts_take_precedence_even_at_threshold_one() {
@@ -87,7 +87,7 @@ mod tests {
         let strategy = ImCutFinder::default().0;
         let finder = FilteringCutFinder {
             strategy,
-            config: ImfConfig::new(1.0).unwrap(),
+            config: FilteringConfig::new(1.0).unwrap(),
         };
         assert_eq!(
             finder.detect_cut(&input),
@@ -102,14 +102,14 @@ mod tests {
         assert!(ImCutFinder::default().detect_cut(&input).is_none());
         let finder = FilteringCutFinder {
             strategy: ImCutFinder::default().0,
-            config: ImfConfig::new(0.3).unwrap(),
+            config: FilteringConfig::new(0.3).unwrap(),
         };
         let cut = finder.detect_cut(&input).unwrap();
         assert_eq!(cut.operator, OperatorType::Sequence);
         cut.validate(&input.activities()).unwrap();
         let disabled = FilteringCutFinder {
             strategy: ImCutFinder::default().0,
-            config: ImfConfig::new(0.0).unwrap(),
+            config: FilteringConfig::new(0.0).unwrap(),
         };
         assert!(disabled.detect_cut(&input).is_none());
     }

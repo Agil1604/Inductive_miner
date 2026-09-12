@@ -1,7 +1,5 @@
-mod config;
-pub use config::{ImfConfig, InvalidDeviationThreshold};
-
 use crate::InductiveMiner;
+
 use crate::components::base_cases::{
     BaseCaseChain, EmptyLog, SingleActivityFiltering, WithoutEmptyTraces,
 };
@@ -12,13 +10,12 @@ use crate::components::fall_throughs::{
     ActivityConcurrent, ActivityOncePerTrace, EmptyTracesFiltering, FallThroughChain,
     FallThroughFinder, FlowerModel, StrictTauLoop, TauLoop,
 };
+use crate::components::filtering::FilteringConfig;
 use crate::components::log_splitting::{
     ConcurrentSplit, LogSplitter, LoopSplitFiltering, SequenceSplitFiltering, XorSplitFiltering,
 };
 
-///
 /// Inductive Miner with infrequent/deviating behaviour filtering.
-/// 
 pub type IMf = InductiveMiner<ImfBaseCase, ImfCutFinder, ImfLogSplitter, ImfFallThrough>;
 
 pub type ImfBaseCase = WithoutEmptyTraces<BaseCaseChain<EmptyLog, SingleActivityFiltering>>;
@@ -40,8 +37,8 @@ pub type ImfFallThrough = FallThroughFinder<
     FlowerModel,
 >;
 
-
-impl ImfConfig {
+impl FilteringConfig {
+    /// Builds the filtering base cases shared by IMf and IMfa.
     pub fn base_cases(self) -> ImfBaseCase {
         WithoutEmptyTraces(BaseCaseChain {
             first: EmptyLog,
@@ -49,17 +46,20 @@ impl ImfConfig {
         })
     }
 
-    pub fn cut_finder(self) -> ImfCutFinder {
+    /// Builds IMf's unfiltered-first cut finder with this threshold.
+    pub fn imf_cut_finder(self) -> ImfCutFinder {
         FilteringCutFinder {
             strategy: Default::default(),
             config: self,
         }
     }
 
-    pub fn log_splitter(self) -> ImfLogSplitter {
+    /// Builds IMf splitting for the four basic operators.
+    pub fn imf_log_splitter(self) -> ImfLogSplitter {
         ImfLogSplitter::default()
     }
 
+    /// Builds the filtering fall-throughs shared by IMf and IMfa.
     pub fn fall_through(self) -> ImfFallThrough {
         FallThroughFinder {
             strategies: FallThroughChain {
@@ -70,14 +70,12 @@ impl ImfConfig {
         }
     }
 
-    ///
     /// Builds a complete miner with the same configuration at every recursion.
-    ///
-    pub fn miner(self) -> IMf {
+    pub fn imf(self) -> IMf {
         InductiveMiner::new(
             self.base_cases(),
-            self.cut_finder(),
-            self.log_splitter(),
+            self.imf_cut_finder(),
+            self.imf_log_splitter(),
             self.fall_through(),
         )
     }

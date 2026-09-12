@@ -236,8 +236,8 @@ fn imf_dispatcher_preserves_metadata_on_retained_events() {
     traces[0].events[3].lifecycle = Lifecycle::Complete;
     let input = input.with_traces(traces);
     let c = cut(&input, OperatorType::Sequence, &[&["a"], &["b"]]);
-    let split = crate::ImfConfig::default()
-        .log_splitter()
+    let split = crate::FilteringConfig::default()
+        .imf_log_splitter()
         .split_log(&input, &c);
     assert_eq!(split[0].traces[0].events[2].timestamp, Some(timestamp));
     assert_eq!(split[0].traces[0].events[2].lifecycle, Lifecycle::Complete);
