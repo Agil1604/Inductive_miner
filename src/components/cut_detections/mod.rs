@@ -11,8 +11,8 @@ mod xor_cut;
 
 pub use concurrent_cut::ConcurrentCut;
 pub use coo_cut::CooCut;
-pub use filtering::{FilteringCutFinder, filter_dfg};
-pub use interleaved_cut::InterleavedCut;
+pub use filtering::{FilteringCutFinder, TwoPassFilteringCutFinder, filter_dfg};
+pub use interleaved_cut::{InterleavedCut, InterleavedCutFiltering};
 pub use loop_cut::LoopCut;
 pub use probabilistic::ImcCutFinder;
 pub use sequence_cut::SequenceCut;

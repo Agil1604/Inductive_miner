@@ -4,9 +4,16 @@ use crate::framework::DetectCut;
 use crate::{IndexedCut, IndexedDfg, IndexedEventLog};
 use std::collections::HashMap;
 
-///
 /// Filters edges relative to the maximum outgoing frequency of their source.
 ///
+/// Retains an edge when `count >= threshold * maximum_outgoing_count`, including
+/// equality. End counts participate as edges to an artificial sink, both when
+/// calculating each source's maximum and when filtering its outgoing edges.
+/// Start counts share an artificial source and use the maximum start count.
+///
+/// Returns a modified clone, leaving the input graph unchanged. Retained counts,
+/// activity frequencies, and the empty-trace count are preserved. Vertices remain
+/// even if all their incident edges are removed. A zero threshold removes nothing.
 pub fn filter_dfg(graph: &IndexedDfg, config: FilteringConfig) -> IndexedDfg {
     let f = config.deviation_threshold();
     let mut maxima = HashMap::new();
@@ -36,13 +43,20 @@ pub fn filter_dfg(graph: &IndexedDfg, config: FilteringConfig) -> IndexedDfg {
     result
 }
 
+/// Tries the same strategy chain before and after DFG filtering, as used by IMf.
 ///
-/// Try the unfiltered strategy chain first, then retry on a filtered DFG.
-/// Both passes use the original log's minimum self-distance witnesses.
+/// Returns an unfiltered cut immediately when one exists. Otherwise filters the
+/// graph and retries [`Self::strategy`]. Both passes retain the original log,
+/// alphabet, and minimum self-distance witness evidence. Unsuitable logs are
+/// rejected by [`CutContext::new`] before strategies run.
 ///
+/// Returned cuts are not validated by this adapter. Cuts found after filtering
+/// require matching filtering splitters to handle deviations in the original log.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct FilteringCutFinder<S> {
+    /// Strategy or ordered chain reused in both passes.
     pub strategy: S,
+    /// Relative-frequency threshold applied only after the first pass fails.
     pub config: FilteringConfig,
 }
 impl<S: CutStrategy> DetectCut for FilteringCutFinder<S> {
@@ -53,6 +67,34 @@ impl<S: CutStrategy> DetectCut for FilteringCutFinder<S> {
         }
         let filtered = context.with_dfg(filter_dfg(context.dfg(), self.config));
         self.strategy.detect(&filtered)
+    }
+}
+
+/// Tries one strategy on the original log, then a separate strategy chain on
+/// a filtered DFG. Both use the original alphabet and witness evidence.
+///
+/// Unlike [`FilteringCutFinder`], the passes can use different detectors and
+/// priority orders. IMfa uses this to try IMa first and omit coo detection from
+/// its filtered fallback. The filtered graph is built only when the first pass
+/// returns `None`. Unsuitable logs are rejected by [`CutContext::new`].
+/// Returned cuts are passed through without validation and must be paired with
+/// suitable filtering splitters.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct TwoPassFilteringCutFinder<U, F> {
+    /// Strategies attempted before filtering.
+    pub unfiltered: U,
+    /// Strategies attempted only when the original pass finds no cut.
+    pub filtered: F,
+    /// Frequency threshold used to filter the DFG.
+    pub config: FilteringConfig,
+}
+impl<U: CutStrategy, F: CutStrategy> DetectCut for TwoPassFilteringCutFinder<U,F> {
+    fn detect_cut(&self, log: &IndexedEventLog) -> Option<IndexedCut> {
+        let context = CutContext::new(log)?;
+        self.unfiltered.detect(&context).or_else(|| {
+            let filtered = context.with_dfg(filter_dfg(context.dfg(), self.config));
+            self.filtered.detect(&filtered)
+        })
     }
 }
 
