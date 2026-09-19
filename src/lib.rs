@@ -7,6 +7,7 @@ pub mod io;
 pub use framework::miner::{InductiveMiner, Miner, MinerError};
 
 pub use model::Activity;
+pub use model::concurrency_graph::ConcurrencyGraph;
 pub use model::directly_follows_graph::DirectlyFollowsGraph;
 pub use model::event::{Event, EventClassifier, EventLog, Lifecycle, Trace};
 pub use model::process_tree::{
@@ -27,3 +28,4 @@ pub(crate) mod test_fitness;
 pub use model::indexed_log::{ActivityId, ActivityInterner, IndexedEventLog};
 pub type IndexedCut = Cut<ActivityId>;
 pub type IndexedDfg = DirectlyFollowsGraph<ActivityId>;
+pub type IndexedConcurrencyGraph = ConcurrencyGraph<ActivityId>;
