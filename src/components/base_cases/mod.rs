@@ -39,3 +39,6 @@ impl<A: BaseCase, B: BaseCase> BaseCase for BaseCaseChain<A, B> {
             .or_else(|| self.second.base_case(log))
     }
 }
+
+mod single_non_atomic_activity_filtering;
+pub use single_non_atomic_activity_filtering::SingleNonAtomicActivityFiltering;
