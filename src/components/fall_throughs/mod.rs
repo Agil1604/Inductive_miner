@@ -7,6 +7,8 @@ mod empty_traces_filtering;
 mod flower_model;
 mod strict_tau_loop;
 mod tau_loop;
+mod non_atomic;
+pub use non_atomic::{ConcurrentFlowerModel, NonAtomicActivityOncePerTrace, NonAtomicTauLoop, StrictNonAtomicTauLoop};
 
 pub use activity_concurrent::ActivityConcurrent;
 pub use activity_once_per_trace::ActivityOncePerTrace;
