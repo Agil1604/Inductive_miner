@@ -1,10 +1,12 @@
 mod empty_log;
 mod single_activity;
 mod single_activity_filtering;
+mod single_non_atomic_activity;
 
 pub use empty_log::EmptyLog;
 pub use single_activity::SingleActivity;
 pub use single_activity_filtering::SingleActivityFiltering;
+pub use single_non_atomic_activity::SingleNonAtomicActivity;
 
 use crate::framework::BaseCase;
 use crate::{IndexedEventLog, Node};

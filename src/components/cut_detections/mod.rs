@@ -4,6 +4,7 @@ mod coo_cut;
 mod filtering;
 mod interleaved_cut;
 mod loop_cut;
+mod non_atomic;
 mod probabilistic;
 mod sequence_cut;
 mod sequence_cut_strict;
@@ -14,6 +15,10 @@ pub use coo_cut::CooCut;
 pub use filtering::{FilteringCutFinder, TwoPassFilteringCutFinder, filter_dfg};
 pub use interleaved_cut::{InterleavedCut, InterleavedCutFiltering};
 pub use loop_cut::LoopCut;
+pub use non_atomic::{
+    NonAtomicConcurrentCut, NonAtomicCutContext, NonAtomicCutFinder, NonAtomicCutStrategy,
+    NonAtomicDfgCut, NonAtomicInterleavedCut, NonAtomicLoopCut,
+};
 pub use probabilistic::ImcCutFinder;
 pub use sequence_cut::SequenceCut;
 pub use sequence_cut_strict::SequenceCutStrict;
