@@ -75,3 +75,6 @@ impl<S: SplitLog, I: SplitLog, O: SplitLog> SplitLog for ExtendedLogSplitter<S, 
         }
     }
 }
+
+mod consistency;
+pub use consistency::{ConsistentSplit, repair_consistency};
