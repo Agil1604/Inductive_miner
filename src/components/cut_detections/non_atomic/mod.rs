@@ -1,13 +1,15 @@
 mod concurrent_cut;
 mod context;
+mod filtering;
 mod finder;
 mod interleaved_cut;
 mod loop_cut;
 
 pub use concurrent_cut::NonAtomicConcurrentCut;
 pub use context::NonAtomicCutContext;
+pub use filtering::NonAtomicFilteringCutFinder;
 pub use finder::{NonAtomicCutFinder, NonAtomicDfgCut};
-pub use interleaved_cut::NonAtomicInterleavedCut;
+pub use interleaved_cut::{NonAtomicInterleavedCut, NonAtomicInterleavedCutFiltering};
 pub use loop_cut::NonAtomicLoopCut;
 
 use crate::IndexedCut;

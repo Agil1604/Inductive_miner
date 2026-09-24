@@ -2,7 +2,7 @@
 ///
 /// Stores a finite threshold in `[0, 1]`, defaulting to `0.2`. The same value
 /// controls DFG filtering, the single-activity estimate, and empty-trace handling.
-/// Build either algorithm with [`Self::imf`] or [`Self::imfa`].
+/// Build a miner with [`Self::imf`], [`Self::imfa`], or [`Self::imflc`].
 ///
 /// ```
 /// use robust_process_mining_with_guarantees::{FilteringConfig, EventLog, Miner};

@@ -166,3 +166,5 @@ impl<S: CutStrategy> DetectCut for CutFinder<S> {
 
 #[cfg(test)]
 mod tests;
+
+pub use non_atomic::{NonAtomicFilteringCutFinder, NonAtomicInterleavedCutFiltering};

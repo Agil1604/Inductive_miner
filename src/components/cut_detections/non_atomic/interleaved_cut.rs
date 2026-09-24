@@ -21,43 +21,59 @@ use crate::{IndexedCut, OperatorType};
 pub struct NonAtomicInterleavedCut;
 impl NonAtomicCutStrategy for NonAtomicInterleavedCut {
     fn detect(&self, c: &NonAtomicCutContext<'_>) -> Option<IndexedCut> {
-        let a = &c.activities;
-        let incompatible = |x, y| {
-            c.edge(x, y)
-                != (c.dfg.end_activities.contains_key(&x)
-                    && c.dfg.start_activities.contains_key(&y))
-        };
-        let mut parts = components(a, |i, j| {
-            incompatible(a[i], a[j]) || incompatible(a[j], a[i])
-        });
-        loop {
-            let mut merge = None;
-            'traces: for t in &c.log.traces {
-                let mut runs = Vec::new();
-                for e in &t.events {
-                    let Some(i) = parts.iter().position(|p| p.contains(&e.activity)) else {
-                        continue;
-                    };
-                    if !matches!(
-                        e.lifecycle,
-                        Lifecycle::Start | Lifecycle::Complete | Lifecycle::Unknown
-                    ) || runs.last() == Some(&i)
-                    {
-                        continue;
-                    }
-                    if let Some(k) = runs.iter().position(|p| *p == i) {
-                        merge = Some((i, runs[k + 1]));
-                        break 'traces;
-                    }
-                    runs.push(i);
-                }
-            }
-            let Some((i, j)) = merge else {
-                break;
-            };
-            let moved = parts.remove(i.max(j));
-            parts[i.min(j)].extend(moved);
-        }
-        cut(OperatorType::Interleaved, parts)
+        detect(c, true)
     }
+}
+
+/// Filtered lifecycle interleaving footprint without trace block merging.
+/// Deviating events are handled by interleaved filtering and consistency repair.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct NonAtomicInterleavedCutFiltering;
+impl NonAtomicCutStrategy for NonAtomicInterleavedCutFiltering {
+    fn detect(&self, c: &NonAtomicCutContext<'_>) -> Option<IndexedCut> {
+        detect(c, false)
+    }
+}
+
+fn detect(c: &NonAtomicCutContext<'_>, enforce_blocks: bool) -> Option<IndexedCut> {
+    let a = &c.activities;
+    let incompatible = |x, y| {
+        c.edge(x, y)
+            != (c.dfg.end_activities.contains_key(&x) && c.dfg.start_activities.contains_key(&y))
+    };
+    let mut parts = components(a, |i, j| {
+        incompatible(a[i], a[j]) || incompatible(a[j], a[i])
+    });
+    if !enforce_blocks {
+        return cut(OperatorType::Interleaved, parts);
+    }
+    loop {
+        let mut merge = None;
+        'traces: for t in &c.log.traces {
+            let mut runs = Vec::new();
+            for e in &t.events {
+                let Some(i) = parts.iter().position(|p| p.contains(&e.activity)) else {
+                    continue;
+                };
+                if !matches!(
+                    e.lifecycle,
+                    Lifecycle::Start | Lifecycle::Complete | Lifecycle::Unknown
+                ) || runs.last() == Some(&i)
+                {
+                    continue;
+                }
+                if let Some(k) = runs.iter().position(|p| *p == i) {
+                    merge = Some((i, runs[k + 1]));
+                    break 'traces;
+                }
+                runs.push(i);
+            }
+        }
+        let Some((i, j)) = merge else {
+            break;
+        };
+        let moved = parts.remove(i.max(j));
+        parts[i.min(j)].extend(moved);
+    }
+    cut(OperatorType::Interleaved, parts)
 }

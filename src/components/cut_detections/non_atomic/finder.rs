@@ -31,3 +31,9 @@ impl<S: NonAtomicCutStrategy> DetectCut for NonAtomicCutFinder<S> {
         self.0.detect(&NonAtomicCutContext::new(log)?)
     }
 }
+
+impl<S: NonAtomicCutStrategy> NonAtomicCutStrategy for NonAtomicCutFinder<S> {
+    fn detect(&self, context: &NonAtomicCutContext<'_>) -> Option<IndexedCut> {
+        self.0.detect(context)
+    }
+}
