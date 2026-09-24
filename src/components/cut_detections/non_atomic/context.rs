@@ -43,6 +43,20 @@ impl<'a> NonAtomicCutContext<'a> {
             dfg_context: OnceCell::new(),
         })
     }
+
+    /// Replaces the DFG while retaining original overlap evidence and alphabet.
+    /// The replacement must preserve activity IDs and vertices. Adapter caches
+    /// are reset so filtered edges are used on the next detection pass.
+    pub fn with_dfg(&self, dfg: IndexedDfg) -> Self {
+        Self {
+            log: self.log,
+            activities: self.activities.clone(),
+            dfg,
+            concurrency: self.concurrency.clone(),
+            dfg_context: OnceCell::new(),
+        }
+    }
+
     pub(super) fn dfg_context(&self) -> &CutContext<'a> {
         self.dfg_context.get_or_init(|| {
             let mut graph = self.dfg.clone();
