@@ -1,7 +1,9 @@
 mod probabilities;
 mod smt;
+mod lifecycle;
 
 pub use probabilities::ActivityRelations;
+pub use lifecycle::ImclcCutFinder;
 
 use super::{ConcurrentCut, CutChain, CutFinder, LoopCut, SequenceCut, XorCut};
 use crate::framework::DetectCut;

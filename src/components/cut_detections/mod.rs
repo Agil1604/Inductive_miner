@@ -19,7 +19,7 @@ pub use non_atomic::{
     NonAtomicConcurrentCut, NonAtomicCutContext, NonAtomicCutFinder, NonAtomicCutStrategy,
     NonAtomicDfgCut, NonAtomicInterleavedCut, NonAtomicLoopCut,
 };
-pub use probabilistic::ImcCutFinder;
+pub use probabilistic::{ImcCutFinder, ImclcCutFinder};
 pub use sequence_cut::SequenceCut;
 pub use sequence_cut_strict::SequenceCutStrict;
 pub use xor_cut::XorCut;
