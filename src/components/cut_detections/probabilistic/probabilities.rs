@@ -1,4 +1,4 @@
-use crate::{ActivityId, IndexedDfg, IndexedEventLog};
+use crate::{ActivityId, IndexedConcurrencyGraph, IndexedDfg, IndexedEventLog, Lifecycle};
 use std::collections::{HashMap, HashSet};
 
 /// Estimated relation probabilities for an ordered pair of distinct activities.
@@ -37,7 +37,7 @@ impl ActivityRelations {
     pub fn from_log(log: &IndexedEventLog) -> Self {
         let alphabet = log.alphabet();
         let graph = IndexedDfg::from_log(log);
-        let positions: HashMap<_, _> = alphabet.iter().enumerate().map(|(i, &a)| (a, i)).collect();
+
         let mut eventually = HashSet::new();
         for trace in &log.traces {
             let mut seen = HashSet::new();
@@ -48,6 +48,60 @@ impl ActivityRelations {
                 seen.insert(event.activity);
             }
         }
+        Self::from_evidence(alphabet, graph, eventually, HashSet::new())
+    }
+
+    /// Builds IMclc evidence from lifecycle executions (thesis §6.5.3).
+    /// Completion-to-start succession supplies eventual evidence; observed
+    /// execution overlap overrides other evidence as a concurrent relation.
+    /// Frequencies count executions, not separate start and completion events.
+    /// Unknown events and unmatched completions are treated as atomic.
+    pub fn from_non_atomic_log(log: &IndexedEventLog) -> Self {
+        let graph = IndexedDfg::from_non_atomic_log(log);
+        let mut alphabet: Vec<_> = graph.activities.keys().copied().collect();
+        alphabet.sort();
+        let concurrency = IndexedConcurrencyGraph::from_log(log);
+        let mut eventually = HashSet::new();
+        for trace in &log.traces {
+            let mut completed = HashSet::new();
+            let mut active = HashMap::new();
+            for event in &trace.events {
+                let a = event.activity;
+                let running = active.get(&a).copied().unwrap_or(0usize);
+                let starts = matches!(event.lifecycle, Lifecycle::Start | Lifecycle::Unknown)
+                    || (event.lifecycle == Lifecycle::Complete && running == 0);
+                if starts {
+                    for &b in &completed {
+                        eventually.insert((b, a));
+                    }
+                }
+                match event.lifecycle {
+                    Lifecycle::Start => {
+                        *active.entry(a).or_insert(0usize) += 1;
+                    }
+                    Lifecycle::Complete => {
+                        if running > 0 {
+                            active.insert(a, running - 1);
+                        }
+                        completed.insert(a);
+                    }
+                    Lifecycle::Unknown => {
+                        completed.insert(a);
+                    }
+                    _ => {}
+                }
+            }
+        }
+        Self::from_evidence(alphabet, graph, eventually, concurrency.edges)
+    }
+
+    fn from_evidence(
+        alphabet: Vec<ActivityId>,
+        graph: IndexedDfg,
+        eventually: HashSet<(ActivityId, ActivityId)>,
+        overlaps: HashSet<(ActivityId, ActivityId)>,
+    ) -> Self {
+        let positions: HashMap<_, _> = alphabet.iter().enumerate().map(|(i, &a)| (a, i)).collect();
         let n = alphabet.len();
         let mut probabilities = vec![vec![PairProbabilities([0.0; 7]); n]; n];
         for &a in &alphabet {
@@ -56,6 +110,12 @@ impl ActivityRelations {
                     continue;
                 }
                 let z = (graph.activities[&a] as f64 + graph.activities[&b] as f64) / 2.0;
+                if overlaps.contains(&(a.min(b), a.max(b))) {
+                    let mut p = [0.0; 7];
+                    p[6] = 1.0;
+                    probabilities[positions[&a]][positions[&b]] = PairProbabilities(p);
+                    continue;
+                }
                 probabilities[positions[&a]][positions[&b]] = estimate(
                     graph.edges.contains_key(&(a, b)),
                     graph.edges.contains_key(&(b, a)),
