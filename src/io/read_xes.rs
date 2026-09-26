@@ -62,11 +62,11 @@ pub enum XesError {
 /// # Examples
 /// ```no_run
 /// use std::path::Path;
-/// use robust_process_mining_with_guarantees::{EventClassifier, io::read_xes};
+/// use inductive_miner::{EventClassifier, io::read_xes};
 ///
 /// let log = read_xes(Path::new("log.xes"), &EventClassifier::default())?;
 /// println!("Read {} traces", log.traces.len());
-/// # Ok::<(), robust_process_mining_with_guarantees::io::read_xes::XesError>(())
+/// # Ok::<(), inductive_miner::io::read_xes::XesError>(())
 /// ```
 pub fn read_xes(path: &Path, classifier: &EventClassifier) -> Result<EventLog, XesError> {
     let file = File::open(path)?;
@@ -103,7 +103,7 @@ pub fn read_xes(path: &Path, classifier: &EventClassifier) -> Result<EventLog, X
 ///
 /// # Examples
 /// ```
-/// use robust_process_mining_with_guarantees::{EventClassifier, io::read_xes_from_reader};
+/// use inductive_miner::{EventClassifier, io::read_xes_from_reader};
 ///
 /// let xml = br#"<log><trace>
 ///     <string key="concept:name" value="case-1"/>
@@ -112,7 +112,7 @@ pub fn read_xes(path: &Path, classifier: &EventClassifier) -> Result<EventLog, X
 /// let log = read_xes_from_reader(xml.as_slice(), &EventClassifier::default())?;
 /// assert_eq!(log.traces[0].case_id, "case-1");
 /// assert_eq!(log.traces[0].events[0].activity.0, "A");
-/// # Ok::<(), robust_process_mining_with_guarantees::io::read_xes::XesError>(())
+/// # Ok::<(), inductive_miner::io::read_xes::XesError>(())
 /// ```
 pub fn read_xes_from_reader<R: std::io::BufRead>(
     reader: R,

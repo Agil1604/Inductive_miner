@@ -5,7 +5,7 @@
 /// Build a miner with [`Self::imf`], [`Self::imfa`], or [`Self::imflc`].
 ///
 /// ```
-/// use robust_process_mining_with_guarantees::{FilteringConfig, EventLog, Miner};
+/// use inductive_miner::{FilteringConfig, EventLog, Miner};
 /// let config = FilteringConfig::new(0.15)?;
 /// let imf = config.imf();
 /// let imfa = config.imfa();

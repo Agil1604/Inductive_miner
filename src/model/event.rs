@@ -66,7 +66,7 @@ pub struct Trace<A = Activity> {
 ///
 /// # Examples
 /// ```
-/// use robust_process_mining_with_guarantees::{
+/// use inductive_miner::{
 ///     Activity, Event, EventLog, Trace, Lifecycle, DirectlyFollowsGraph,
 /// };
 ///

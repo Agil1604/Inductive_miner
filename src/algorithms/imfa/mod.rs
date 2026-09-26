@@ -68,7 +68,7 @@ impl FilteringConfig {
     /// Builds a complete miner with consistent configuration throughout recursion.
     ///
     /// ```
-    /// use robust_process_mining_with_guarantees::{EventLog, FilteringConfig, Miner};
+    /// use inductive_miner::{EventLog, FilteringConfig, Miner};
     /// let tree = FilteringConfig::new(0.15)?.imfa().mine(&EventLog::default())?;
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```

@@ -2,11 +2,13 @@ mod empty_log;
 mod single_activity;
 mod single_activity_filtering;
 mod single_non_atomic_activity;
+mod single_non_atomic_activity_filtering;
 
 pub use empty_log::EmptyLog;
 pub use single_activity::SingleActivity;
 pub use single_activity_filtering::SingleActivityFiltering;
 pub use single_non_atomic_activity::SingleNonAtomicActivity;
+pub use single_non_atomic_activity_filtering::SingleNonAtomicActivityFiltering;
 
 use crate::framework::BaseCase;
 use crate::{IndexedEventLog, Node};
@@ -39,6 +41,3 @@ impl<A: BaseCase, B: BaseCase> BaseCase for BaseCaseChain<A, B> {
             .or_else(|| self.second.base_case(log))
     }
 }
-
-mod single_non_atomic_activity_filtering;
-pub use single_non_atomic_activity_filtering::SingleNonAtomicActivityFiltering;

@@ -181,7 +181,7 @@ impl Node {
 ///
 /// # Examples
 /// ```
-/// use robust_process_mining_with_guarantees::{Activity, Node, OperatorType, ProcessTree};
+/// use inductive_miner::{Activity, Node, OperatorType, ProcessTree};
 ///
 /// let root = Node::new_operator_with_children(
 ///     OperatorType::Sequence,
@@ -192,7 +192,7 @@ impl Node {
 /// );
 /// let tree = ProcessTree::new(root)?;
 /// tree.root().validate()?;
-/// # Ok::<(), robust_process_mining_with_guarantees::TreeError>(())
+/// # Ok::<(), inductive_miner::TreeError>(())
 /// ```
 #[derive(Debug)]
 pub struct ProcessTree {
