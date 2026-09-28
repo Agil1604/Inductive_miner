@@ -6,7 +6,7 @@ authors = ["Amirov Agil <agil.amirov@gmail.com>"]
 description = "This is the implementation of Inductive Miner framework"
 readme = true
 repository = "https://github.com/Agil1604/Inductive_miner"
-# license = 
+license = "MIT"
 # keywords = ["process mining"]
 
 # exclude = []
