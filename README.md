@@ -6,7 +6,7 @@ Given an event log, the library discovers a process tree — a hierarchical mode
 
 The library is **case-centric**: it assumes each event belongs to exactly one case, and each case has a single trace. 
 
-This framework offers 11 different ready-to-use Inductive Miner algorithms ([click](#algorithms) for more) and lets users define custom algorithms. Each algorithm is a composition of four stages: **base cases**, **cut detection**, **log splitting**, and **fall-throughs**. Public APIs allow composing custom algorithms from reusable components.
+This framework offers 8 different ready-to-use Inductive Miner algorithms ([click](#algorithms) for more) and lets users define custom algorithms. Each algorithm is a composition of four stages: **base cases**, **cut detection**, **log splitting**, and **fall-throughs**. Public APIs allow composing custom algorithms from reusable components.
 
 ## Table of content
 - [Inductive Miner](#inductive-miner)
@@ -56,9 +56,6 @@ Replace `log.xes` with your input file. The default classifier reads activity na
 | [`IMlc`](./docs/algorithms/IMlc.md) | Non-atomic logs | Fitness, rediscoverability (`Clc`) |
 | [`IMflc`](./docs/algorithms/IMflc.md)| `IMlc` + filtering | Rediscoverability (`Clc`) |
 | [`IMclc`](./docs/algorithms/IMclc.md)| `IMlc` + incompleteness | Rediscoverability (`Clc`) |
-| [`IMd`]()  | Large logs (DFG-based) | Rediscoverability (`Cb`) |
-| [`IMfd`]() | Large logs + filtering | Rediscoverability (`Cb`) |
-| [`IMcd`]() | Large logs + incompleteness | Rediscoverability (`Cb`) |
 
 For detailed descriptions, see [`docs/algorithms/`](docs/algorithms/).
 
