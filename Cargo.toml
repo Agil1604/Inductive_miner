@@ -7,10 +7,8 @@ description = "This is the implementation of Inductive Miner framework"
 readme = true
 repository = "https://github.com/Agil1604/Inductive_miner"
 license = "MIT"
-# keywords = ["process mining"]
-
-# exclude = []
-# include = []
+keywords = ["process-mining", "process-discovery", "event-log"]
+categories = ["science", "algorithms", "data-structures"]
 
 [dependencies]
 thiserror = "2.0.21"
