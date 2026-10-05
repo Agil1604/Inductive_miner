@@ -1,8 +1,8 @@
 # Inductive Miner – infrequent (IMf)
 
-IMf extends [Inductive Miner](IM.md) to handle infrequent and deviating behaviour. It first attempts ordinary IM cut detection, then filters the directly-follows graph if no cut is found. Its base cases, splitters, and empty-trace handling can also discard observed behaviour.
+IMf extends [IM](IM.md) to handle infrequent and deviating behaviour. It first attempts ordinary IM cut detection, then filters the directly-follows graph if no cut is found. Its base cases, splitters, and empty-trace handling can also discard observed behaviour.
 
-This document describes IMf from §6.2 of Sander Leemans' dissertation [*Robust Process Mining with Guarantees*](https://leemans.ch/publications/theses/phd.pdf).
+This document describes IMf from section 6.2 of Sander Leemans' dissertation [*Robust Process Mining with Guarantees*](https://leemans.ch/publications/theses/phd.pdf).
 
 ## Input and output
 
@@ -121,14 +121,14 @@ These empty traces let recursive empty-trace handling retain or filter the missi
 
 IMf uses the same fall-through order as IM, replacing `EmptyTraces` with `EmptyTracesFiltering`:
 
-| Component | Condition and action |
-|---|---|
+| Component              | Condition and action                                                                                                                      |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | `EmptyTracesFiltering` | Remove empty traces and recursively mine the remainder. Retain an XOR branch with `τ` only when the empty-trace fraction is at least `f`. |
-| `ActivityOncePerTrace` | Extract an activity occurring exactly once per trace as a concurrent branch. |
-| `ActivityConcurrent` | Extract an activity when its removal enables a cut in the remaining log. |
-| `StrictTauLoop` | Split before subsequent start activities when preceded by an end activity. |
-| `TauLoop` | Split before subsequent start activities without the end-activity requirement. |
-| `FlowerModel` | Allow arbitrary nonempty sequences of observed activities. |
+| `ActivityOncePerTrace` | Extract an activity occurring exactly once per trace as a concurrent branch.                                                              |
+| `ActivityConcurrent`   | Extract an activity when its removal enables a cut in the remaining log.                                                                  |
+| `StrictTauLoop`        | Split before subsequent start activities when preceded by an end activity.                                                                |
+| `TauLoop`              | Split before subsequent start activities without the end-activity requirement.                                                            |
+| `FlowerModel`          | Allow arbitrary nonempty sequences of observed activities.                                                                                |
 
 Start and end activities refer to trace boundaries, not lifecycle transitions. See [IM.md](IM.md#fall-throughs) for the shared fall-through details.
 
@@ -190,12 +190,12 @@ A zero threshold disables frequency-based graph removal and retains observed emp
 
 ## Implementation locations
 
-| Part | Source code |
-|---|---|
-| IMf composition and configuration builders | [`src/algorithms/imf/mod.rs`](../../src/algorithms/imf/mod.rs) |
-| Shared filtering configuration | [`src/components/filtering.rs`](../../src/components/filtering.rs) |
-| Filtering base case | [`src/components/base_cases/single_activity_filtering.rs`](../../src/components/base_cases/single_activity_filtering.rs) |
-| DFG filtering and two-pass detection | [`src/components/cut_detections/filtering.rs`](../../src/components/cut_detections/filtering.rs) |
-| Log splitters | [`src/components/log_splitting`](../../src/components/log_splitting) |
-| Empty-trace filtering | [`src/components/fall_throughs/empty_traces_filtering.rs`](../../src/components/fall_throughs/empty_traces_filtering.rs) |
-| IMf tests | [`src/algorithms/imf/tests.rs`](../../src/algorithms/imf/tests.rs) |
+| Part                                       | Source code                                                                                                              |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| IMf composition and configuration builders | [`src/algorithms/imf/mod.rs`](../../src/algorithms/imf/mod.rs)                                                           |
+| Shared filtering configuration             | [`src/components/filtering.rs`](../../src/components/filtering.rs)                                                       |
+| Filtering base case                        | [`src/components/base_cases/single_activity_filtering.rs`](../../src/components/base_cases/single_activity_filtering.rs) |
+| DFG filtering and two-pass detection       | [`src/components/cut_detections/filtering.rs`](../../src/components/cut_detections/filtering.rs)                         |
+| Log splitters                              | [`src/components/log_splitting`](../../src/components/log_splitting)                                                     |
+| Empty-trace filtering                      | [`src/components/fall_throughs/empty_traces_filtering.rs`](../../src/components/fall_throughs/empty_traces_filtering.rs) |
+| IMf tests                                  | [`src/algorithms/imf/tests.rs`](../../src/algorithms/imf/tests.rs)                                                       |

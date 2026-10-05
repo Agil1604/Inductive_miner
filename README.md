@@ -46,16 +46,16 @@ Replace `log.xes` with your input file. The default classifier reads activity na
 
 ## Algorithms
 
-| Algorithm | Purpose | Guarantees |
-|---|---|---|
-| [`IM`](./docs/algorithms/IM.md)   | Basic discovery | Fitness, rediscoverability (`Cb`) |
-| [`IMf`](./docs/algorithms/IMf.md)  | Filters infrequent behavior | Rediscoverability (`Cb`) |
-| [`IMc`](./docs/algorithms/IMc.md)  | Handles incomplete logs | Rediscoverability (`Cb`) |
-| [`IMa`](./docs/algorithms/IMa.md)  | Supports `τ`, `↔`, `∨` | Fitness, rediscoverability (`Ccoo`) |
-| [`IMfa`](./docs/algorithms/IMfa.md) | `IMa` + filtering | Rediscoverability (`Ccoo`) |
-| [`IMlc`](./docs/algorithms/IMlc.md) | Non-atomic logs | Fitness, rediscoverability (`Clc`) |
-| [`IMflc`](./docs/algorithms/IMflc.md)| `IMlc` + filtering | Rediscoverability (`Clc`) |
-| [`IMclc`](./docs/algorithms/IMclc.md)| `IMlc` + incompleteness | Rediscoverability (`Clc`) |
+| Algorithm                             | Purpose                     | Guarantees                          |
+| ------------------------------------- | --------------------------- | ----------------------------------- |
+| [`IM`](./docs/algorithms/IM.md)       | Basic discovery             | Fitness, rediscoverability (`Cb`)   |
+| [`IMf`](./docs/algorithms/IMf.md)     | Filters infrequent behavior | Rediscoverability (`Cb`)            |
+| [`IMc`](./docs/algorithms/IMc.md)     | Handles incomplete logs     | Rediscoverability (`Cb`)            |
+| [`IMa`](./docs/algorithms/IMa.md)     | Supports `τ`, `↔`, `∨`      | Fitness, rediscoverability (`Ccoo`) |
+| [`IMfa`](./docs/algorithms/IMfa.md)   | `IMa` + filtering           | Rediscoverability (`Ccoo`)          |
+| [`IMlc`](./docs/algorithms/IMlc.md)   | Non-atomic logs             | Fitness, rediscoverability (`Clc`)  |
+| [`IMflc`](./docs/algorithms/IMflc.md) | `IMlc` + filtering          | Rediscoverability (`Clc`)           |
+| [`IMclc`](./docs/algorithms/IMclc.md) | `IMlc` + incompleteness     | Rediscoverability (`Clc`)           |
 
 For detailed descriptions, see [`docs/algorithms/`](docs/algorithms/).
 

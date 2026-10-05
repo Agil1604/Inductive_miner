@@ -2,15 +2,15 @@
 
 ## Overview
 
-The library implements the log-based Inductive Miner framework from Sander Leemans' dissertation [*Robust Process Mining with Guarantees*](https://leemans.ch/publications/theses/phd.pdf). The framework and its proof obligations are described in paragraph 4.2 of the thesis. Algorithms discover a `ProcessTree` by recursively decomposing an `EventLog`. A shared recursive engine handles control flow; reusable components determine base cases, cuts, splitting, and fall-through behaviour.
+The library implements the log-based Inductive Miner framework from Sander Leemans' dissertation [*Robust Process Mining with Guarantees*](https://leemans.ch/publications/theses/phd.pdf). The framework and its proof obligations are described in section 4.2 of the thesis. Algorithms discover a `ProcessTree` by recursively decomposing an `EventLog`. A shared recursive engine handles control flow; reusable components determine base cases, cuts, splitting, and fall-through behaviour.
 
-| Module | Responsibility |
-|---|---|
-| `model` | Events, traces, logs, activity identities, graph abstractions, cuts, and process trees. |
-| `io` | Read input into named event logs. |
-| `framework` | Stage traits, recursive mining, callbacks, and mining errors. |
-| `components` | Reusable strategies, adapters, and composition combinators. |
-| `algorithms` | Concrete compositions. |
+| Module       | Responsibility                                                                          |
+| ------------ | --------------------------------------------------------------------------------------- |
+| `model`      | Events, traces, logs, activity identities, graph abstractions, cuts, and process trees. |
+| `io`         | Read input into named event logs.                                                       |
+| `framework`  | Stage traits, recursive mining, callbacks, and mining errors.                           |
+| `components` | Reusable strategies, adapters, and composition combinators.                             |
+| `algorithms` | Concrete compositions.                                                                  |
 
 The usual data flow is:
 
@@ -56,11 +56,11 @@ Fall-throughs receive callbacks rather than constructing another miner. This kee
 
 The contracts are defined in [`framework/traits.rs`](../src/framework/traits.rs). All stages operate on `IndexedEventLog` internally.
 
-| Trait | Method | Result |
-|---|---|---|
-| `BaseCase` | `base_case(log)` | `Option<Node>` |
-| `DetectCut` | `detect_cut(log)` | `Option<IndexedCut>` |
-| `SplitLog` | `split_log(log, cut)` | `Vec<IndexedEventLog>` |
+| Trait         | Method                  | Result                     |
+| ------------- | ----------------------- | -------------------------- |
+| `BaseCase`    | `base_case(log)`        | `Option<Node>`             |
+| `DetectCut`   | `detect_cut(log)`       | `Option<IndexedCut>`       |
+| `SplitLog`    | `split_log(log, cut)`   | `Vec<IndexedEventLog>`     |
 | `FallThrough` | `fall_through(context)` | `Result<Node, MinerError>` |
 
 ### Base cases
@@ -102,15 +102,15 @@ Strategies can therefore extract activities or split repetitions without hard-co
 
 Algorithms are assembled from generic structs and type aliases. The ordinary pipeline uses static dispatch; callback references provide access to the current miner from fall-through components.
 
-| Combinator | Purpose |
-|---|---|
-| `BaseCaseChain<A, B>` | Try `A`, then `B` only if `A` returns `None`. |
-| `CutChain<A, B>` | Select the first matching cut strategy. |
-| `CutFinder<S>` | Prepare an ordinary cut context and invoke a strategy or chain. |
-| `LogSplitter<X, S, C, L>` | Dispatch XOR, sequence, concurrent, and loop cuts to their splitters. |
+| Combinator                     | Purpose                                                                  |
+| ------------------------------ | ------------------------------------------------------------------------ |
+| `BaseCaseChain<A, B>`          | Try `A`, then `B` only if `A` returns `None`.                            |
+| `CutChain<A, B>`               | Select the first matching cut strategy.                                  |
+| `CutFinder<S>`                 | Prepare an ordinary cut context and invoke a strategy or chain.          |
+| `LogSplitter<X, S, C, L>`      | Dispatch XOR, sequence, concurrent, and loop cuts to their splitters.    |
 | `ExtendedLogSplitter<S, I, O>` | Add interleaved and inclusive-choice splitting to a standard dispatcher. |
-| `FallThroughChain<A, B>` | Try optional strategies in order, propagating errors immediately. |
-| `FallThroughFinder<S, F>` | Try optional strategies, then a guaranteed fallback. |
+| `FallThroughChain<A, B>`       | Try optional strategies in order, propagating errors immediately.        |
+| `FallThroughFinder<S, F>`      | Try optional strategies, then a guaranteed fallback.                     |
 
 Nested chains express priority. They select the first applicable result without comparing scores. Probabilistic finders perform scoring and SMT optimization inside their own detection implementation.
 
@@ -136,13 +136,13 @@ Interning reduces repeated string copying and hashing in graph and cut operation
 
 The recursive engine checks component output before recursing on cut-generated sublogs. Fall-through recursion also checks interner identity.
 
-| Error | Meaning |
-|---|---|
-| `MinerError::Cut` | The cut violates its partition contract. |
-| `MinerError::Tree` | A produced node or tree violates structural rules. |
-| `MinerError::InvalidSplitCount` | The splitter did not return one sublog per partition. |
+| Error                              | Meaning                                                       |
+| ---------------------------------- | ------------------------------------------------------------- |
+| `MinerError::Cut`                  | The cut violates its partition contract.                      |
+| `MinerError::Tree`                 | A produced node or tree violates structural rules.            |
+| `MinerError::InvalidSplitCount`    | The splitter did not return one sublog per partition.         |
 | `MinerError::InvalidSplitAlphabet` | A sublog contains an activity outside its assigned partition. |
-| `MinerError::DifferentInterner` | A derived log uses another activity identity table. |
+| `MinerError::DifferentInterner`    | A derived log uses another activity identity table.           |
 
 Node validation checks tree structure, including minimum operator arities. It does not establish fitness, precision, or correct lifecycle semantics. Cut validation checks the alphabet partition; it does not prove the operator's behavioural footprint.
 

@@ -2,7 +2,7 @@
 
 Inductive Miner is a process discovery algorithm that builds a process tree from an event log. It recursively divides the log into simpler sublogs and combines their discovered models using process tree operators.
 
-This document describes the basic IM algorithm from §6.1 of Sander Leemans' dissertation [*Robust Process Mining with Guarantees*](https://leemans.ch/publications/theses/phd.pdf).
+This document describes the basic IM algorithm from section 6.1 of Sander Leemans' dissertation [*Robust Process Mining with Guarantees*](https://leemans.ch/publications/theses/phd.pdf).
 
 ## Input and output
 
@@ -116,14 +116,14 @@ Result: loop(a, b)
 
 When no regular cut is found, IM tries additional decompositions in the following order. Their recursive calls use the current miner, preserving its component configuration.
 
-| Component | Condition and action |
-|---|---|
-| `EmptyTraces` | If empty traces exist, return `×(τ, IM(nonempty traces))`. |
-| `ActivityOncePerTrace` | Find an activity occurring exactly once in every trace; return its leaf concurrently with the recursively mined remaining events. |
-| `ActivityConcurrent` | Try removing one activity. If the remaining log admits a cut, recursively mine the removed activity and the remaining events as concurrent branches. |
-| `StrictTauLoop` | Split before a subsequent occurrence of a start activity only when the preceding event is an end activity. |
-| `TauLoop` | Split before subsequent occurrences of start activities without requiring an end activity immediately before them. |
-| `FlowerModel` | Return a model allowing arbitrary nonempty sequences of observed activities. |
+| Component              | Condition and action                                                                                                                                 |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `EmptyTraces`          | If empty traces exist, return `×(τ, IM(nonempty traces))`.                                                                                           |
+| `ActivityOncePerTrace` | Find an activity occurring exactly once in every trace; return its leaf concurrently with the recursively mined remaining events.                    |
+| `ActivityConcurrent`   | Try removing one activity. If the remaining log admits a cut, recursively mine the removed activity and the remaining events as concurrent branches. |
+| `StrictTauLoop`        | Split before a subsequent occurrence of a start activity only when the preceding event is an end activity.                                           |
+| `TauLoop`              | Split before subsequent occurrences of start activities without requiring an end activity immediately before them.                                   |
+| `FlowerModel`          | Return a model allowing arbitrary nonempty sequences of observed activities.                                                                         |
 
 Here, start and end activities refer to trace boundaries in the current sublog, not to the lifecycle transitions `Start` and `Complete`.
 
@@ -177,13 +177,13 @@ Basic IM does not filter noise, use event durations, or account for overlapping 
 
 ## Implementation locations
 
-| Part | Source code |
-|---|---|
-| IM composition | [`src/algorithms/im/mod.rs`](../../src/algorithms/im/mod.rs) |
-| Recursive miner | [`src/framework/miner.rs`](../../src/framework/miner.rs) |
-| Stage contracts | [`src/framework/traits.rs`](../../src/framework/traits.rs) |
-| Base cases | [`src/components/base_cases`](../../src/components/base_cases) |
+| Part                    | Source code                                                            |
+| ----------------------- | ---------------------------------------------------------------------- |
+| IM composition          | [`src/algorithms/im/mod.rs`](../../src/algorithms/im/mod.rs)           |
+| Recursive miner         | [`src/framework/miner.rs`](../../src/framework/miner.rs)               |
+| Stage contracts         | [`src/framework/traits.rs`](../../src/framework/traits.rs)             |
+| Base cases              | [`src/components/base_cases`](../../src/components/base_cases)         |
 | Cuts and shared context | [`src/components/cut_detections`](../../src/components/cut_detections) |
-| Log splitting | [`src/components/log_splitting`](../../src/components/log_splitting) |
-| Fall-throughs | [`src/components/fall_throughs`](../../src/components/fall_throughs) |
-| IM tests | [`src/algorithms/im/tests.rs`](../../src/algorithms/im/tests.rs) |
+| Log splitting           | [`src/components/log_splitting`](../../src/components/log_splitting)   |
+| Fall-throughs           | [`src/components/fall_throughs`](../../src/components/fall_throughs)   |
+| IM tests                | [`src/algorithms/im/tests.rs`](../../src/algorithms/im/tests.rs)       |
