@@ -9,15 +9,14 @@ The library is **case-centric**: it assumes each event belongs to exactly one ca
 This framework offers 8 different ready-to-use Inductive Miner algorithms ([click](#algorithms) for more) and lets users define custom algorithms. Each algorithm is a composition of four stages: **base cases**, **cut detection**, **log splitting**, and **fall-throughs**. Public APIs allow composing custom algorithms from reusable components.
 
 ## Table of content
-- [Inductive Miner](#inductive-miner)
-  - [Table of content](#table-of-content)
-  - [Installation](#installation)
-  - [Quick start](#quick-start)
-  - [Algorithms](#algorithms)
-  - [Features](#features)
-  - [Limitations](#limitations)
-  - [License](#license)
-  - [Documentation](#documentation)
+
+- [Installation](#installation)
+- [Quick start](#quick-start)
+- [Algorithms](#algorithms)
+- [Features](#features)
+- [Limitations](#limitations)
+- [License](#license)
+- [Documentation](#documentation)
 
 ## Installation
 
