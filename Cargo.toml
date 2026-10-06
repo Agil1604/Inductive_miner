@@ -1,6 +1,6 @@
 [package]
 name = "inductive_miner"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 authors = ["Amirov Agil <agil.amirov@gmail.com>"]
 description = "This is the implementation of Inductive Miner framework"
