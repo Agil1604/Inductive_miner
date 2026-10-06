@@ -214,6 +214,23 @@ impl ProcessTree {
     pub fn root(&self) -> &Node {
         &self.root
     }
+
+    /// Exports the tree as compact JSON with a tagged `root` node.
+    /// See [`mod@crate::io::write_json`] for the format and file export.
+    ///
+    /// # Errors
+    /// Returns a JSON serialization error if encoding fails.
+    pub fn to_json(&self) -> Result<String, serde_json::Error> {
+        serde_json::to_string(&crate::io::write_json::JsonTree::from(self))
+    }
+
+    /// Exports the same JSON format as [`Self::to_json`] with indentation.
+    ///
+    /// # Errors
+    /// Returns a JSON serialization error if encoding fails.
+    pub fn to_json_pretty(&self) -> Result<String, serde_json::Error> {
+        serde_json::to_string_pretty(&crate::io::write_json::JsonTree::from(self))
+    }
 }
 
 /// An operator and an ordered partition of an event log's activity alphabet.

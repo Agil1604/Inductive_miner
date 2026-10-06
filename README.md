@@ -43,6 +43,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 Replace `log.xes` with your input file. The default classifier reads activity names from `concept:name` and retains timestamps and lifecycle transitions. Import the `Miner` trait to make the `mine` method available.
 
+Export a discovered tree as JSON:
+
+```rust
+let json = tree.to_json_pretty()?;
+inductive_miner::io::write_json(std::path::Path::new("tree.json"), &tree)?;
+```
+
+JSON contains a `root` with tagged activity, tau, or operator nodes. Operator
+children retain their order, including the body-first ordering of loops.
+
 ## Algorithms
 
 | Algorithm                             | Purpose                     | Guarantees                          |
